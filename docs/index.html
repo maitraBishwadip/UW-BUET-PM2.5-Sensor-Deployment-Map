@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bangladesh PM2.5 Sensor Deployment Map</title>
+  <meta name="description" content="Interactive map of PM2.5 air-quality sensor deployments across Bangladesh — DoE CAMS/C-CAMS, third-party networks, and the UW–BUET 55-sensor low-cost network." />
+  <link rel="stylesheet" href="assets/vendor/leaflet.css" />
+  <link rel="stylesheet" href="assets/vendor/MarkerCluster.css" />
+  <link rel="stylesheet" href="assets/vendor/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar" aria-label="Map controls">
+      <header class="side-head">
+        <button id="side-toggle" class="side-toggle" aria-label="Collapse sidebar" title="Collapse / expand">‹</button>
+        <div class="side-title">
+          <h1>Bangladesh PM<sub>2.5</sub> Deployments</h1>
+          <p class="subtitle">DoE network · third-party monitors · UW–BUET low-cost network</p>
+        </div>
+      </header>
+
+      <div class="side-scroll">
+        <section class="panel">
+          <div class="stat-row" id="stat-row"><!-- built by JS --></div>
+          <p class="built" id="built-stamp"></p>
+        </section>
+
+        <section class="panel">
+          <div class="search-wrap">
+            <input id="search" type="search" placeholder="Search name / district / id…" autocomplete="off" />
+            <ul id="search-results" class="search-results" hidden></ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-h">Status</h2>
+          <div class="seg" id="status-filter" role="tablist">
+            <button class="seg-btn is-on" data-status="all">All</button>
+            <button class="seg-btn" data-status="planned">Planned</button>
+            <button class="seg-btn" data-status="installed">Installed</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-h-row">
+            <h2 class="panel-h">My deployments</h2>
+            <button class="mini-toggle" data-group="mine">hide all</button>
+          </div>
+          <div class="layer-list" id="layers-mine"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-h-row">
+            <h2 class="panel-h">Existing networks</h2>
+            <button class="mini-toggle" data-group="existing">hide all</button>
+          </div>
+          <div class="layer-list" id="layers-existing"></div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-h">Options</h2>
+          <label class="opt"><input type="checkbox" id="opt-cluster" /> Cluster dense markers</label>
+          <label class="opt"><input type="checkbox" id="opt-divlabels" checked /> Division shading &amp; counts</label>
+          <label class="opt"><input type="checkbox" id="opt-theme" /> Dark mode</label>
+          <label class="opt-select">Basemap
+            <select id="opt-basemap">
+              <option value="carto">Carto Light</option>
+              <option value="osm">OpenStreetMap</option>
+              <option value="esri">Satellite</option>
+              <option value="cartodark">Carto Dark</option>
+            </select>
+          </label>
+        </section>
+
+        <footer class="side-foot">
+          <p>Edit the CSVs in <code>data/</code>, rerun <code>build_map.py</code>, push — the live map updates.</p>
+          <p id="repo-link"></p>
+        </footer>
+      </div>
+    </aside>
+
+    <main id="map" aria-label="Deployment map"></main>
+    <button id="sidebar-open" class="sidebar-open" hidden aria-label="Open controls">☰ Controls</button>
+  </div>
+
+  <script src="assets/vendor/leaflet.js"></script>
+  <script src="assets/vendor/leaflet.markercluster.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

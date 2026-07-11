@@ -1,0 +1,53 @@
+{
+  "built_utc": "2026-07-11 17:41 UTC",
+  "total_stations": 119,
+  "layer_counts": {
+    "ambient_semi_urban": 14,
+    "ambient_village": 18,
+    "border": 15,
+    "community": 5,
+    "doe_cams": 16,
+    "doe_ccams": 15,
+    "doe_colocation": 8,
+    "gaia": 17,
+    "iqair": 8,
+    "purpleair": 1,
+    "spartan": 1,
+    "us_embassy": 1
+  },
+  "division_counts": {
+    "Barishal": {
+      "mine": 6,
+      "existing": 2
+    },
+    "Chattogram": {
+      "mine": 7,
+      "existing": 11
+    },
+    "Dhaka": {
+      "mine": 4,
+      "existing": 36
+    },
+    "Khulna": {
+      "mine": 7,
+      "existing": 6
+    },
+    "Mymensingh": {
+      "mine": 7,
+      "existing": 2
+    },
+    "Rajshahi": {
+      "mine": 8,
+      "existing": 3
+    },
+    "Rangpur": {
+      "mine": 8,
+      "existing": 2
+    },
+    "Sylhet": {
+      "mine": 8,
+      "existing": 2
+    }
+  },
+  "skipped_placeholder_rows": []
+}

@@ -1,0 +1,9 @@
+id,category,tier,name,division,district,lat,lon,status,coord_precision,notes
+A01,doe_colocation,urban,Sangshad Bhaban Sher-e-Bangla Nagar,Dhaka,Dhaka,23.7625,90.3782,planned,approx,"Colocation with CAMS-1 reference monitor"
+A02,doe_colocation,urban,TV Station Khulshi,Chattogram,Chattogram,22.3667,91.8000,planned,approx,"Colocation with CAMS-6 reference monitor"
+A03,doe_colocation,urban,Sopura Rajshahi City,Rajshahi,Rajshahi,24.3745,88.6042,planned,approx,"Colocation with CAMS-9 reference monitor"
+A04,doe_colocation,urban,Boyra Khulna City,Khulna,Khulna,22.8456,89.5403,planned,approx,"Colocation with CAMS-8 reference monitor"
+A05,doe_colocation,urban,Red Crescent Campus Sylhet City,Sylhet,Sylhet,24.8949,91.8687,planned,approx,"Colocation with CAMS-10 reference monitor"
+A06,doe_colocation,urban,DFO Office Campus Barishal City,Barishal,Barishal,22.7010,90.3535,planned,approx,"Colocation with CAMS-11 compact station"
+A07,doe_colocation,urban,Rangpur City,Rangpur,Rangpur,25.7439,89.2752,planned,approx,"Colocation with CAMS-13 compact station"
+A08,doe_colocation,urban,Mymensingh City,Mymensingh,Mymensingh,24.7471,90.4203,planned,approx,"Colocation with CAMS-12 compact station"

@@ -1,0 +1,10 @@
+id,category,tier,name,division,district,lat,lon,status,coord_precision,notes
+# ── POLLUTION-HOTSPOT PLACEHOLDER ──────────────────────────────────────────────
+# No sites confirmed yet. When pollutant-source locations (brick kilns, industry)
+# are confirmed, add one row per sensor BELOW this comment block, uncommented.
+# Leave lat/lon EMPTY if unknown — the row is skipped with a warning until filled.
+# Then rerun:  python scripts/build_map.py   (or just push — CI rebuilds the map)
+#
+# Example rows (keep the # to leave them inactive; remove # + edit to activate):
+# H01,pollution_hotspot,source,Brick kiln cluster (Amin Bazar),Dhaka,Dhaka,23.7900,90.3000,proposed,approx,"Kiln-belt ambient site - nearest school/market rooftop"
+# H02,pollution_hotspot,source,Industrial zone (example),Chattogram,Chattogram,,,proposed,approx,"Lat/lon pending reconnaissance"
