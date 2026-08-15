@@ -1,4 +1,5 @@
-# Group C - districts with NO existing CAMS / C-CAMS / SAS to anchor to. 18 units.
+# Group C of the 55 DoE-selected low-cost PurpleAir units.
+# Districts with NO existing CAMS / C-CAMS / SAS to anchor to. 18 units.
 # Each unit is proposed at a verified government school compound (secure, accessible,
 # roughly representative of the district town).
 id,doe_group,pair_id,role,name,area_type,division,district,lat,lon,associated_station,school,status,coord_precision,notes

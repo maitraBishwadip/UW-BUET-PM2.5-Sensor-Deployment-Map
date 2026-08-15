@@ -1,7 +1,7 @@
 {
-  "built_utc": "2026-08-15 17:19 UTC",
+  "built_utc": "2026-08-15 17:38 UTC",
   "total_stations": 180,
-  "colocated_sites": 21,
+  "colocated_sites": 19,
   "group_totals": {
     "mine": 55,
     "doe_proposed": 57,

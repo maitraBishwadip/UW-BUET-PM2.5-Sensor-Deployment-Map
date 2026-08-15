@@ -14,15 +14,15 @@ const REPO_URL = "https://github.com/maitraBishwadip/UW-BUET-PM2.5-Sensor-Deploy
 /* Layer catalogue.
  * section -> sidebar block + summary tally; family -> pin glyph; color -> pin gradient. */
 const LAYERS = {
-  // --- DoE proposed 55-unit plan (plus glyph) ---
+  // --- DoE proposed 55-unit PurpleAir plan (plus glyph) ---
   doe_prop_cams:        { label: "Co-located w/ existing CAMS+SAS", section: "doe_proposed", family: "prop", color: "#0b3d91", order: 1 },
-  doe_prop_sas:         { label: "Co-located w/ rural SAS Aria",    section: "doe_proposed", family: "prop", color: "#00838f", order: 2 },
+  doe_prop_sas:         { label: "Co-located w/ rural SAS area",    section: "doe_proposed", family: "prop", color: "#00838f", order: 2 },
   doe_prop_rural:       { label: "New rural deployment",            section: "doe_proposed", family: "prop", color: "#3f9142", order: 3 },
   doe_prop_urban:       { label: "New urban deployment",            section: "doe_proposed", family: "prop", color: "#7b3fa0", order: 4 },
   doe_prop_district:    { label: "New district (no existing CAMS)", section: "doe_proposed", family: "prop", color: "#c2185b", order: 5 },
   doe_prop_unspecified: { label: "Unspecified in DoE table",        section: "doe_proposed", family: "prop", color: "#9e9e9e", order: 6, hideIfEmpty: true },
-  // --- Super SAS (red star) ---
-  doe_sas:            { label: "SAS Aria super-site",         section: "sas",      family: "sas",     color: "#d62828", order: 20 },
+  // --- Super SAS: Source Apportionment Study areas (red star) ---
+  doe_sas:            { label: "Source Apportionment Study",  section: "sas",      family: "sas",     color: "#d62828", order: 20 },
   // --- UW-BUET network (diamond glyph) ---
   doe_colocation:     { label: "DoE colocation (Block A)",    section: "mine",     family: "mine",    color: "#1f6feb", order: 30 },
   border:             { label: "Border area (Block B)",       section: "mine",     family: "mine",    color: "#e4572e", order: 31 },
@@ -288,7 +288,8 @@ function popupHTML(p) {
   add("District", p.district);
   if (p.status) add("Status", statusChip(p.status));
   const prec = { approx: "planning-stage (approx.)", exact: "confirmed",
-                 derived: "derived from co-located station" }[p.coord_precision];
+                 derived: "derived from co-located station",
+                 "district-centroid": "⚠ generic district point — placeholder" }[p.coord_precision];
   add("Coords", prec || p.coord_precision);
   add("Notes", p.notes);
 
@@ -442,7 +443,7 @@ function buildStats() {
   const units = state.summary?.doe_proposed_units ?? bySection("doe_proposed");
   const row = document.getElementById("stat-row");
   row.innerHTML = `
-    <div class="stat"><div class="num">${units}</div><div class="lab">DoE proposed</div></div>
+    <div class="stat"><div class="num">${units}</div><div class="lab">DoE PurpleAir</div></div>
     <div class="stat"><div class="num">${bySection("sas")}</div><div class="lab">Super SAS</div></div>
     <div class="stat"><div class="num">${bySection("mine")}</div><div class="lab">UW–BUET</div></div>
     <div class="stat"><div class="num">${bySection("existing")}</div><div class="lab">Existing</div></div>`;

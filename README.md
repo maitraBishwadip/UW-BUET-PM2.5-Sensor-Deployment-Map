@@ -1,10 +1,10 @@
 # Bangladesh PM2.5 Sensor Deployment Map
 
 An interactive map of **every PM2.5 air-quality deployment in Bangladesh** — the DoE regulatory
-network (CAMS + C-CAMS), the **Super SAS Aria** super-sites, the **DoE proposed 55-unit low-cost
-plan**, all third-party/low-cost networks, and the **UW–BUET low-cost network** being planned by
-Bishwadip Maitra. The map rebuilds from plain CSV files and redeploys to GitHub Pages automatically
-on every push.
+network (CAMS + C-CAMS), the 10 **Source Apportionment Study (SAS)** areas, the **DoE proposed
+55-unit PurpleAir plan**, all third-party/low-cost networks, and the **UW–BUET low-cost network**
+being planned by Bishwadip Maitra. The map rebuilds from plain CSV files and redeploys to GitHub
+Pages automatically on every push.
 
 **Live map:** https://maitrabishwadip.github.io/UW-BUET-PM2.5-Sensor-Deployment-Map/
 *(available once GitHub Pages is enabled — see [First-time setup](#first-time-setup))*
@@ -19,15 +19,18 @@ Every deployment is drawn as a **map pin**. **Colour** identifies the layer; the
 head** identifies the family, so four networks stacked on one compound stay readable. Super SAS
 sites break the pattern deliberately — they are **red stars ★**.
 
+The sidebar groups them as **My deployments** (the DoE PurpleAir 55 + the UW–BUET network),
+**Super SAS**, and **Existing networks**.
+
 | Section | Layer | Marker | Source |
 |---|---|---|---|
-| **DoE proposed (55)** | Co-located w/ existing CAMS+SAS | navy pin **+** | DoE "Proposed Monitoring Locations v2" |
-| | Co-located w/ rural SAS Aria | teal pin **+** | ” |
+| **My · DoE PurpleAir (55)** | Co-located w/ existing CAMS+SAS | navy pin **+** | DoE "Proposed Monitoring Locations v2" |
+| | Co-located w/ rural SAS area | teal pin **+** | ” |
 | | New rural deployment | green pin **+** | ” |
 | | New urban deployment | purple pin **+** | ” |
 | | New district (no existing CAMS) | crimson pin **+** | ” |
-| **Super SAS (DoE)** | SAS Aria super-site | **red ★** | DoE table (7 CAMS-co-located + 3 rural) |
-| **UW–BUET** | DoE colocation (Block A) | blue pin **◆** | this project |
+| **Super SAS (DoE)** | Source Apportionment Study area | **red ★** | DoE SAS table (7 CAMS-co-located + 3 rural) |
+| **My · UW–BUET** | DoE colocation (Block A) | blue pin **◆** | this project |
 | | Border area (Block B) | vermilion pin **◆** | this project |
 | | Ambient · semi-urban | sand pin **◆** | this project |
 | | Ambient · village/rural | teal pin **◆** | this project |
@@ -41,8 +44,8 @@ A **solid gradient** pin is installed; a **pale** pin is proposed or planned.
 
 ### Co-located sites
 
-21 sites host more than one station (a CAMS compound often carries CAMS + SAS + a GAIA unit + a
-proposed low-cost unit). The build clusters stations within **250 m** into one site, and the map
+19 sites host more than one station (a CAMS compound often carries CAMS + SAS + a GAIA unit + a
+proposed PurpleAir unit). The build clusters stations within **250 m** into one site, and the map
 **fans them out on a small ring** with leader lines back to the true point, so nothing is hidden.
 Each popup lists the other stations sharing that site. Toggle it with *Fan out co-located sites*.
 
@@ -69,20 +72,25 @@ data/my_deployments/
   border.csv                   Block B — 15 border-area sensors
   ambient.csv                  Block C — 32 ambient sensors (tier = semi-urban | village)
   pollution_hotspot.csv        Block D — PLACEHOLDER, add rows when kiln/industry sites are confirmed
-data/doe_proposed/             the DoE 55-unit proposal
+data/doe_proposed/             the DoE 55-unit PurpleAir proposal
   group_a_cams_paired.csv      31 units paired with existing CAMS / C-CAMS
-  group_b_sas_paired.csv        6 units — rural SAS Aria + new urban counterpart (3 pairs)
+  group_b_sas_paired.csv        6 units — rural SAS area + new urban counterpart (3 pairs)
   group_c_new_districts.csv    18 units in districts with no existing station
   pending_unspecified.csv       Patuakhali, Sunamganj — type/qty blank in the DoE table
 data/existing/
   doe_cams.csv                 16 DoE CAMS   (reference)
   doe_ccams.csv                15 DoE C-CAMS (reference)
-  doe_sas.csv                  10 Super SAS Aria super-sites
-  doe_purpleair.csv            DoE PurpleAir PA-II-SD network — HEADER ONLY, awaiting the list
+  doe_sas.csv                  10 Source Apportionment Study (SAS) areas
   third_party.csv              US Embassy, GAIA, PurpleAir, IQAir, community, SPARTAN
 ```
 
-### The DoE proposed 55
+### The DoE proposed 55 (PurpleAir)
+
+These 55 rows **are** the DoE-selected PurpleAir deployment — transcribed from
+[`source_docs/PM25_Sensor_Deployment_Plan.md`](source_docs/PM25_Sensor_Deployment_Plan.md), which is
+the authority for every coordinate. The popup's *Google Maps ↗* link is built from the same lat/lon,
+so it resolves to the same point as the link in that table. (The `PA-01` row in `third_party.csv` is
+a different thing: the ~17 PurpleAir units **already operating**, not part of the 55.)
 
 `data/doe_proposed/*.csv` rows are:
 

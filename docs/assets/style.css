@@ -70,6 +70,10 @@ body {
   color: var(--muted); margin: 0 0 8px; font-weight: 600; }
 .panel-h-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .panel-h-row .panel-h { margin: 0; }
+.sub-h-row { display: flex; align-items: baseline; justify-content: space-between;
+  margin: 10px 0 5px; }
+.sub-h { font-size: 12px; font-weight: 650; color: var(--text-primary); margin: 0; }
+.sub-h-row:first-of-type { margin-top: 2px; }
 .mini-toggle { font-size: 10.5px; color: var(--accent); background: none; border: none;
   cursor: pointer; padding: 2px 4px; }
 .mini-toggle:hover { text-decoration: underline; }

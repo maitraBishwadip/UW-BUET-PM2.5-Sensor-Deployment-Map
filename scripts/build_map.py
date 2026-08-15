@@ -65,8 +65,7 @@ PROPOSED_LAYERS = {
 NETWORK_LAYERS = {
     "DOE CAMS": "doe_cams",
     "DOE C-CAMS": "doe_ccams",
-    "DOE SAS Aria": "doe_sas",
-    "DoE PurpleAir": "purpleair",
+    "DoE SAS": "doe_sas",
     "US Embassy / AirNow": "us_embassy",
     "GAIA A12 (aqicn)": "gaia",
     "PurpleAir": "purpleair",
