@@ -15,26 +15,29 @@ redeploy to GitHub Pages automatically on every push.
 
 ## Two views
 
-The site opens on a **3D globe** and keeps the original **2D map** a click away; whichever you pick
-is remembered for next time.
+The site opens on a **3D globe** and keeps the original **2D map** a click away — the switch is the
+pill at the bottom of the screen, and whichever you pick is remembered for next time. Layers,
+filters and search live in a drawer behind the **☰ Layers & filters** button, so the map itself
+always gets the whole window.
 
 | | 3D globe (default) | 2D map |
 |---|---|---|
-| Renderer | hand-written orthographic projection on a `<canvas>` — no library | Leaflet (vendored) |
-| Basemap | world country outlines + all **64 Bangladesh districts** | Carto / OSM / Esri satellite tiles |
-| Extras | districts shade by how many deployments they hold; district labels appear as you zoom | marker clustering, division shading, co-location fan-out |
+| Renderer | [globe.gl](https://github.com/vasturiano/globe.gl) (three.js / WebGL), vendored | Leaflet, vendored |
+| Ground | world country outlines + all **64 Bangladesh districts** as real 3D polygons | Carto / OSM / Esri satellite tiles |
+| Extras | districts shade by how many deployments they hold; hover one for its name, division and count | marker clustering, division shading, co-location fan-out |
 | Controls | drag to spin, scroll to zoom, click a district to zoom into it, click a pin for its details | the usual Leaflet controls |
 
-It opens on the whole globe and flies down to Bangladesh once, then hands over to you. Zoomed all
-the way out the country carries a single badge with the live deployment count rather than 180
-overlapping pins; zoom in and the individual pins take over. Past district detail it points you at
-the 2D map, which is where the streets and satellite imagery live.
+The globe opens on the whole planet and flies down to Bangladesh once, then hands over. Pins on the
+far side fade out rather than floating over the back of the planet.
 
 Both views read the same state: the sidebar's layer toggles, status filter, A/B/C group filter and
 search drive whichever one is on screen.
 
-The globe has no browser in its build loop, so its projection and render path are covered by
-`scripts/test_globe_math.js` and `scripts/test_globe_render.js`, which run in CI on every push.
+globe.gl is **loaded on demand**, the first time the globe is shown. If it fails to load, or the
+browser has no WebGL, the site says so and falls back to the 2D map rather than showing an empty
+stage. Rendering is the library's problem; the data handed to it — which stations pass the filters,
+and the per-district tallies behind the choropleth — is ours, and is covered by
+`scripts/test_globe_data.js`, which runs in CI on every push.
 
 ## What's on the map
 
@@ -180,8 +183,7 @@ example row, uncomment it, fill in name/division/district (and lat/lon when know
 
 ```bash
 python scripts/build_map.py            # validates CSVs -> docs/data/*.json  (fails loudly on bad rows)
-node scripts/test_globe_math.js        # globe projection: round-trip, horizon, drag tracking
-node scripts/test_globe_render.js      # globe render path, headless, against the data just built
+node scripts/test_globe_data.js        # globe filters + per-district tallies, against that output
 python -m http.server -d docs 8000     # then open http://localhost:8000
 ```
 
@@ -245,17 +247,17 @@ use and assigns each district its division. The exact commands are in that scrip
 
 ```
 data/            editable CSVs (sources of truth) + boundaries
-scripts/         build_map.py, prep_boundaries.py (stdlib only) + the two globe tests (node)
+scripts/         build_map.py, prep_boundaries.py (stdlib only) + test_globe_data.js (node)
 docs/            the published site
-                   index.html, assets/app.js (2D map), assets/globe.js (3D globe),
-                   assets/vendor/ (Leaflet), data/ (generated - do not hand-edit)
+                   index.html, assets/app.js (2D map + shell), assets/globe.js (3D globe),
+                   assets/vendor/ (Leaflet, globe.gl), data/ (generated - do not hand-edit)
 reports/         third_party_deployments.md — survey of existing networks
 source_docs/     Proposed_Monitoring_Locations_Sheet.xlsx (authority for the 55) + DoE PDF/DOCX
 .github/         Pages CI/CD workflow
 ```
 
-Neither view pulls in a mapping library from a CDN: Leaflet is vendored under
-`docs/assets/vendor/`, and the globe is plain canvas with no dependency at all.
+Nothing is fetched from a CDN at runtime: Leaflet and globe.gl are both vendored under
+`docs/assets/vendor/`, so the site keeps working regardless of what a CDN does.
 
 Coordinates for every planned sensor are planning-stage approximations; confirm exact sites by
 reconnaissance before installation. Where the DoE table named only a district, the nearest

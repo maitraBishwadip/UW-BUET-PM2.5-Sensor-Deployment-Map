@@ -11,10 +11,10 @@
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
-  <div id="app">
+  <div id="app" class="side-closed">
     <aside id="sidebar" aria-label="Map controls">
       <header class="side-head">
-        <button id="side-toggle" class="side-toggle" aria-label="Collapse sidebar" title="Collapse / expand">‹</button>
+        <button id="side-toggle" class="side-toggle" aria-label="Close panel" title="Close">×</button>
         <div class="side-title">
           <h1>Bangladesh PM<sub>2.5</sub> Deployments</h1>
           <p class="subtitle">DoE reference network · Super SAS · DoE proposed 55 · third-party · UW–BUET</p>
@@ -22,13 +22,6 @@
       </header>
 
       <div class="side-scroll">
-        <section class="panel">
-          <div class="seg" id="view-switch" role="tablist">
-            <button class="seg-btn is-on" data-view="globe">🌐 3D globe</button>
-            <button class="seg-btn" data-view="map">🗺 2D map</button>
-          </div>
-        </section>
-
         <section class="panel">
           <div class="stat-row" id="stat-row"><!-- built by JS --></div>
           <p class="built" id="built-stamp"></p>
@@ -151,23 +144,29 @@
     </aside>
 
     <main id="stage" aria-label="Deployment map">
-      <div id="globe-wrap">
-        <canvas id="globe-canvas" aria-label="3D globe of Bangladesh deployments"></canvas>
-        <div class="globe-tools">
-          <button type="button" id="globe-fit-bd" title="Zoom to the deployments">Bangladesh</button>
-          <button type="button" id="globe-fit-world" title="Zoom out to the whole globe">Whole globe</button>
-          <span class="gt-sep"></span>
-          <button type="button" id="globe-zoom-in" aria-label="Zoom in">+</button>
-          <button type="button" id="globe-zoom-out" aria-label="Zoom out">−</button>
-        </div>
-        <div id="globe-tip" class="globe-tip" hidden></div>
-        <div id="globe-flash" class="globe-flash" hidden></div>
-        <div id="globe-hint" class="globe-hint" hidden></div>
-        <div id="globe-card" class="globe-card" hidden></div>
-      </div>
+      <div id="globe-wrap" aria-label="3D globe of Bangladesh deployments"></div>
       <div id="map" class="is-hidden"></div>
+
+      <button id="sidebar-open" class="sidebar-open" aria-label="Open layers and filters">
+        ☰ Layers &amp; filters
+      </button>
+
+      <div class="globe-tools" id="globe-tools">
+        <button type="button" id="globe-fit-bd" title="Zoom to the deployments">Bangladesh</button>
+        <button type="button" id="globe-fit-world" title="Zoom out to the whole globe">Whole globe</button>
+        <span class="gt-sep"></span>
+        <button type="button" id="globe-zoom-in" aria-label="Zoom in">+</button>
+        <button type="button" id="globe-zoom-out" aria-label="Zoom out">−</button>
+      </div>
+
+      <div id="globe-card" class="globe-card" hidden></div>
+      <div id="globe-msg" class="globe-msg" hidden></div>
+
+      <div id="view-switch" class="view-switch" role="tablist" aria-label="Map view">
+        <button class="vs-btn is-on" data-view="globe" role="tab">🌐 3D globe</button>
+        <button class="vs-btn" data-view="map" role="tab">🗺 2D map</button>
+      </div>
     </main>
-    <button id="sidebar-open" class="sidebar-open" hidden aria-label="Open controls">☰ Controls</button>
   </div>
 
   <script src="assets/vendor/leaflet.js"></script>
