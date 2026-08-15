@@ -8,7 +8,11 @@
   <link rel="stylesheet" href="assets/vendor/leaflet.css" />
   <link rel="stylesheet" href="assets/vendor/MarkerCluster.css" />
   <link rel="stylesheet" href="assets/vendor/MarkerCluster.Default.css" />
-  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/style.css?v=a0becffcf4" />
+  <!-- BUILD is stamped by scripts/build_map.py; it versions the asset and data URLs so a
+       cached app.js can never run against a newer index.html (GitHub Pages serves these
+       with max-age=600, which otherwise lets the two drift apart for ten minutes). -->
+  <script>window.BUILD = "a0becffcf4";</script>
 </head>
 <body>
   <div id="app">
@@ -140,6 +144,7 @@
 
   <script src="assets/vendor/leaflet.js"></script>
   <script src="assets/vendor/leaflet.markercluster.js"></script>
-  <script src="assets/app.js"></script>
+  <script src="assets/app.js?v=a0becffcf4"></script>
+
 </body>
 </html>

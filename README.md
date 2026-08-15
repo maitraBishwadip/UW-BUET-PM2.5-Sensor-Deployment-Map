@@ -178,6 +178,14 @@ The [GitHub Actions workflow](.github/workflows/deploy.yml) reruns `build_map.py
 `docs/` site to GitHub Pages. No build step runs in the browser — the committed `docs/data/*.json`
 is what ships, so a push is all you need.
 
+**Cache busting.** Pages serves assets with `max-age=600`, so without a version marker a browser can
+run a *cached* `app.js` against a *fresh* `index.html` for ten minutes after a deploy — and if the
+markup changed, the stale script goes looking for elements that no longer exist. `build_map.py`
+therefore stamps a content hash of `app.js`, `style.css` and the generated data into `index.html`,
+both as `window.BUILD` and as `?v=…` on the asset URLs; `app.js` puts the same marker on every data
+fetch. The build **fails** if it cannot find exactly one of each tag to stamp, so the protection
+can't be silently lost. Rebuilding with nothing changed leaves `index.html` untouched.
+
 ### First-time setup
 
 Pages must be enabled once:

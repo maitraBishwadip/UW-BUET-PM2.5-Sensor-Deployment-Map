@@ -161,10 +161,13 @@ async function boot() {
   document.getElementById("repo-link").innerHTML =
     `<a href="${REPO_URL}" target="_blank" rel="noopener">Source &amp; how to update ↗</a>`;
 
+  // Every request carries the build version stamped into index.html, so the data can
+  // never be served from cache by an older build than the page asking for it.
+  const v = window.BUILD ? `?v=${window.BUILD}` : "";
   const [geo, divisions, summary] = await Promise.all([
-    fetch("data/deployments.geojson").then(r => r.json()),
-    fetch("data/divisions.json").then(r => r.json()),
-    fetch("data/summary.json").then(r => r.json()).catch(() => null),
+    fetch(`data/deployments.geojson${v}`).then(r => r.json()),
+    fetch(`data/divisions.json${v}`).then(r => r.json()),
+    fetch(`data/summary.json${v}`).then(r => r.json()).catch(() => null),
   ]);
   state.allFeatures = geo.features;
   state.summary = summary;
@@ -652,6 +655,15 @@ function applyHashView() {
 
 boot().catch(err => {
   console.error(err);
-  document.getElementById("map").innerHTML =
-    `<div style="padding:40px;font:14px system-ui;color:#b00">Failed to load map data: ${err.message}<br>Run <code>python scripts/build_map.py</code> first.</div>`;
+  // Keep the failure inside the map pane: an unwrapped message used to widen the flex
+  // item and shove the sidebar off screen, turning one fault into two.
+  const el = document.getElementById("map");
+  el.textContent = "";
+  const box = document.createElement("div");
+  box.style.cssText = "padding:32px;font:14px/1.5 system-ui,sans-serif;color:#b00;"
+    + "max-width:100%;overflow-wrap:anywhere";
+  box.innerHTML = `<strong>The map failed to start.</strong><br>${err.message}<br><br>`
+    + `If this page was open during a deploy, reload it (Ctrl+Shift+R). `
+    + `Locally, run <code>python scripts/build_map.py</code> first.`;
+  el.appendChild(box);
 });

@@ -16,9 +16,11 @@ map can fan them out instead of stacking them on top of each other.
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import math
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -30,6 +32,10 @@ PROPOSED_DIR = ROOT / "data" / "doe_proposed"
 EXISTING_DIR = ROOT / "data" / "existing"
 BOUNDARY_SRC = ROOT / "data" / "boundaries" / "bd_divisions_simplified.json"
 OUT_DIR = ROOT / "docs" / "data"
+INDEX_HTML = ROOT / "docs" / "index.html"
+# Files whose contents decide the cache-busting version stamped into index.html.
+VERSIONED = ["docs/assets/app.js", "docs/assets/style.css",
+             "docs/data/deployments.geojson", "docs/data/summary.json"]
 
 # Bangladesh bounding box (generous, includes border strips and islands)
 LAT_MIN, LAT_MAX = 20.3, 26.75
@@ -118,6 +124,43 @@ def haversine_m(a, b) -> float:
     dp, dl = p2 - p1, math.radians(lon2 - lon1)
     h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * 6371000 * math.asin(math.sqrt(h))
+
+
+def stamp_build_version() -> str:
+    """Write a content hash of the site's assets into index.html's window.BUILD.
+
+    app.js appends it to every asset and data URL it fetches. Without it, GitHub Pages'
+    ten-minute cache can hand a browser a stale app.js alongside a fresh index.html - which
+    is how a page ends up running code against markup that no longer has the elements it
+    expects. Idempotent: rebuilding with unchanged files leaves index.html untouched.
+    """
+    h = hashlib.sha1()
+    for rel in VERSIONED:
+        p = ROOT / rel
+        if p.exists():
+            h.update(p.read_bytes())
+    version = h.hexdigest()[:10]
+
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    new_html = html
+
+    # The two files that actually change between deploys. Vendored libraries are pinned
+    # copies and never do, so they are left alone.
+    subs = [
+        (r'window\.BUILD\s*=\s*"[^"]*"', f'window.BUILD = "{version}"'),
+        (r'href="assets/style\.css(?:\?v=[0-9a-f]+)?"', f'href="assets/style.css?v={version}"'),
+        (r'src="assets/app\.js(?:\?v=[0-9a-f]+)?"', f'src="assets/app.js?v={version}"'),
+    ]
+    for pattern, replacement in subs:
+        new_html, n = re.subn(pattern, replacement, new_html)
+        if n != 1:
+            raise SystemExit(f"  ERROR    {INDEX_HTML.name}: expected exactly one match for "
+                             f"{pattern!r}, found {n}. The version stamp cannot be applied, "
+                             f"so a stale asset could outlive a deploy - fix the markup.")
+
+    if new_html != html:
+        INDEX_HTML.write_text(new_html, encoding="utf-8")
+    return version
 
 
 def doe_letter(group: str) -> str:
@@ -391,8 +434,11 @@ def main() -> int:
     (OUT_DIR / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    version = stamp_build_version()
+
     print(f"\nBuild OK: {len(features)} mapped stations, {len(pending)} awaiting siting "
           f"-> docs/data/")
+    print(f"  cache-busting build version: {version}")
     print(f"  co-located sites (>=2 stations within {COLOCATION_RADIUS_M} m): {colo_sites}")
     print(f"  of which DoE CAMS + SAS + proposed PurpleAir: {triple_sites}")
     print(f"  DoE proposed units: {summary['doe_proposed_units']}  "
