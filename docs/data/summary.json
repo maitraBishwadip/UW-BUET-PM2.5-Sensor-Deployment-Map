@@ -1,12 +1,18 @@
 {
-  "built_utc": "2026-08-15 17:38 UTC",
+  "built_utc": "2026-08-15 17:56 UTC",
   "total_stations": 180,
   "colocated_sites": 19,
+  "cams_sas_pa_sites": 7,
   "group_totals": {
     "mine": 55,
     "doe_proposed": 57,
     "sas": 10,
     "existing": 64
+  },
+  "doe_group_totals": {
+    "A": 31,
+    "B": 6,
+    "C": 18
   },
   "doe_proposed_units": 55,
   "layer_counts": {
@@ -86,6 +92,8 @@
       "layer": "doe_prop_urban",
       "division": "Khulna",
       "district": "Satkhira",
+      "doe_group": "A.2",
+      "status": "proposed",
       "reason": "coordinates pending field siting"
     },
     {
@@ -95,6 +103,8 @@
       "layer": "doe_prop_urban",
       "division": "Barishal",
       "district": "Bhola",
+      "doe_group": "B",
+      "status": "proposed",
       "reason": "coordinates pending field siting"
     },
     {
@@ -104,6 +114,8 @@
       "layer": "doe_prop_urban",
       "division": "Dhaka",
       "district": "Munshiganj",
+      "doe_group": "B",
+      "status": "proposed",
       "reason": "coordinates pending field siting"
     },
     {
@@ -113,6 +125,8 @@
       "layer": "doe_prop_urban",
       "division": "Rangpur",
       "district": "Dinajpur",
+      "doe_group": "B",
+      "status": "proposed",
       "reason": "coordinates pending field siting"
     },
     {
@@ -122,6 +136,8 @@
       "layer": "doe_prop_unspecified",
       "division": "Barishal",
       "district": "Patuakhali",
+      "doe_group": "A.2",
+      "status": "pending",
       "reason": "type/quantity unspecified in DoE table"
     },
     {
@@ -131,6 +147,8 @@
       "layer": "doe_prop_unspecified",
       "division": "Sylhet",
       "district": "Sunamganj",
+      "doe_group": "C",
+      "status": "pending",
       "reason": "type/quantity unspecified in DoE table"
     }
   ]

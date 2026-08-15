@@ -1,10 +1,13 @@
-# Group A of the 55 DoE-selected low-cost PurpleAir units (source_docs/PM25_Sensor_Deployment_Plan.md).
+# Group A of the 55 DoE-selected low-cost PurpleAir units.
+# AUTHORITY: source_docs/Proposed_Monitoring_Locations_Sheet.xlsx, sheet "Proposed Sensor
+# Locations", rows 3-33 (the .md is a narrative restatement of the same plan).
 # Units paired with EXISTING DoE CAMS / C-CAMS stations.
 # 31 units = 7 urban CAMS+SAS colocations + 7 rural counterparts (A.1, 7 pairs)
 #            + 16 single rural sites + 1 urban-only site (Satkhira)  (A.2, 17 rows)
-# Source: DoE "Proposed Monitoring Locations v2" table.
-# Urban CAMS+SAS rows carry no coordinates in the source doc; lat/lon here are taken
-# from the associated CAMS station in data/existing/doe_cams.csv (coord_precision=derived).
+# The 7 A.1 urban rows are the CALIBRATION COMPOUNDS: DoE CAMS + SAS area + PurpleAir on
+# one site. The sheet gives them no coordinates, so lat/lon come from the associated CAMS
+# in data/existing/doe_cams.csv (coord_precision=derived) - which is what makes the build
+# detect them as CAMS+SAS+PurpleAir sites.
 id,doe_group,pair_id,role,name,area_type,division,district,lat,lon,associated_station,school,status,coord_precision,notes
 DP-A01,A.1,P1,cams_colocated,Farmgate CAMS+SAS (calibration reference),urban,Dhaka,Dhaka,23.759410,90.388679,CAMS-2 Farmgate + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Keraniganj rural unit"
 DP-A02,A.1,P2,cams_colocated,TV Centre Khulshi CAMS+SAS (calibration reference),urban,Chattogram,Chattogram,22.360487,91.800454,CAMS-6 TV Station Khulshi + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Chattogram rural unit"

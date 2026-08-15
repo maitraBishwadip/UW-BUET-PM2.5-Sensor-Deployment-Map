@@ -15,10 +15,10 @@ const REPO_URL = "https://github.com/maitraBishwadip/UW-BUET-PM2.5-Sensor-Deploy
  * section -> sidebar block + summary tally; family -> pin glyph; color -> pin gradient. */
 const LAYERS = {
   // --- DoE proposed 55-unit PurpleAir plan (plus glyph) ---
-  doe_prop_cams:        { label: "Co-located w/ existing CAMS+SAS", section: "doe_proposed", family: "prop", color: "#0b3d91", order: 1 },
-  doe_prop_sas:         { label: "Co-located w/ rural SAS area",    section: "doe_proposed", family: "prop", color: "#00838f", order: 2 },
-  doe_prop_rural:       { label: "New rural deployment",            section: "doe_proposed", family: "prop", color: "#3f9142", order: 3 },
-  doe_prop_urban:       { label: "New urban deployment",            section: "doe_proposed", family: "prop", color: "#7b3fa0", order: 4 },
+  doe_prop_cams:        { label: "On a CAMS + SAS compound",        section: "doe_proposed", family: "prop", color: "#0b3d91", order: 1 },
+  doe_prop_sas:         { label: "On a rural SAS area",             section: "doe_proposed", family: "prop", color: "#00838f", order: 2 },
+  doe_prop_rural:       { label: "New rural site",                  section: "doe_proposed", family: "prop", color: "#3f9142", order: 3 },
+  doe_prop_urban:       { label: "New urban site",                  section: "doe_proposed", family: "prop", color: "#7b3fa0", order: 4, hideIfEmpty: true },
   doe_prop_district:    { label: "New district (no existing CAMS)", section: "doe_proposed", family: "prop", color: "#c2185b", order: 5 },
   doe_prop_unspecified: { label: "Unspecified in DoE table",        section: "doe_proposed", family: "prop", color: "#9e9e9e", order: 6, hideIfEmpty: true },
   // --- Super SAS: Source Apportionment Study areas (red star) ---
@@ -42,6 +42,13 @@ const LAYERS = {
 };
 
 const SECTIONS = ["doe_proposed", "sas", "mine", "existing"];
+
+/* Groups of the DoE "Proposed Monitoring Locations" sheet. Counts come from the build. */
+const DOE_GROUPS = {
+  A: { label: "A", title: "Group A — paired with an existing DoE CAMS station" },
+  B: { label: "B", title: "Group B — paired with a rural Source Apportionment Study area" },
+  C: { label: "C", title: "Group C — districts with no existing CAMS / C-CAMS" },
+};
 
 // bd.json uses older division spellings; map them to the report spellings.
 const DIV_ALIAS = { "Barisal": "Barishal", "Chittagong": "Chattogram" };
@@ -146,7 +153,7 @@ function makeIcon(layerKey, status, size = 26) {
 const state = {
   map: null, baseLayer: null, divisionLayer: null, coloLayer: null,
   markersByLayer: {}, clusterByLayer: {}, useCluster: false, spread: true,
-  enabled: {}, statusFilter: "all", allFeatures: [], summary: null,
+  enabled: {}, statusFilter: "all", doeGroup: "all", allFeatures: [], summary: null,
 };
 
 /* ---------- load & init ---------- */
@@ -166,6 +173,7 @@ async function boot() {
   buildDivisions(divisions);
   buildMarkers();
   buildLayerControls();
+  buildDoeGroupFilter();
   buildStats();
   buildPending();
   wireUI();
@@ -274,7 +282,9 @@ function popupHTML(p) {
     add("Tier", p.tier);
   } else if (p.group === "doe_proposed") {
     add("Role", L2.label);
-    add("DoE group", p.doe_group + (p.pair_id ? ` · pair ${p.pair_id}` : ""));
+    const g = DOE_GROUPS[(p.doe_group || "").split(".")[0].toUpperCase()];
+    add("DoE group", (g ? g.title.replace("Group ", "") : p.doe_group)
+        + (p.pair_id ? ` · pair ${p.pair_id}` : ""));
     add("Area type", p.area_type);
     add("Reference", p.associated_station);
     add("Host site", p.school);
@@ -294,9 +304,11 @@ function popupHTML(p) {
   add("Notes", p.notes);
 
   const others = colocatedWith(p);
+  const kindTag = p.colo_kind === "cams_sas_pa"
+    ? `<span class="pc-kind">CAMS + SAS + PurpleAir</span>` : "";
   const coloBlock = others.length ? `
     <div class="pop-colo">
-      <div class="pc-h">Same site — ${others.length + 1} stations</div>
+      <div class="pc-h">Same site — ${others.length + 1} stations ${kindTag}</div>
       ${others.map(o => {
         const OL = LAYERS[o.layer] || LAYERS.other;
         return `<div class="pc-row"><span class="pc-dot" style="background:${OL.color}"></span>
@@ -330,11 +342,22 @@ function passesStatus(status) {
   return status === state.statusFilter;
 }
 
+// The A/B/C chip filters only inside the DoE-proposed set, so the reference network it is
+// being compared against stays on the map.
+function passesDoeGroup(p) {
+  if (state.doeGroup === "all" || p.group !== "doe_proposed") return true;
+  return (p.doe_group || "").split(".")[0].toUpperCase() === state.doeGroup;
+}
+
+function passesFilters(m) {
+  return passesStatus(m._status) && passesDoeGroup(m.feature.properties);
+}
+
 function visibleMarkers() {
   const out = [];
   Object.keys(LAYERS).forEach(key => {
     if (!state.enabled[key]) return;
-    state.markersByLayer[key].forEach(m => { if (passesStatus(m._status)) out.push(m); });
+    state.markersByLayer[key].forEach(m => { if (passesFilters(m)) out.push(m); });
   });
   return out;
 }
@@ -344,7 +367,7 @@ function refreshMarkerDisplay() {
     if (state.clusterByLayer[key]) { state.map.removeLayer(state.clusterByLayer[key]); state.clusterByLayer[key] = null; }
     state.markersByLayer[key].forEach(m => state.map.removeLayer(m));
     if (!state.enabled[key]) return;
-    const visible = state.markersByLayer[key].filter(m => passesStatus(m._status));
+    const visible = state.markersByLayer[key].filter(passesFilters);
     if (state.useCluster) {
       const cg = L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true, showCoverageOnHover: false });
       visible.forEach(m => cg.addLayer(m));
@@ -369,19 +392,31 @@ function applyColoSpread() {
     state.markersByLayer[key].forEach(m => {
       if (!m.getLatLng().equals(m._trueLatLng)) m.setLatLng(m._trueLatLng);
     }));
-  if (!state.spread || state.useCluster) return;
 
   const groups = {};
   visibleMarkers().forEach(m => {
     const cid = m.feature.properties.colo_id;
     if (cid) (groups[cid] = groups[cid] || []).push(m);
   });
+  const siteAnchor = ms => L.latLng(
+    ms.reduce((s, m) => s + m._trueLatLng.lat, 0) / ms.length,
+    ms.reduce((s, m) => s + m._trueLatLng.lng, 0) / ms.length);
+
+  // The seven calibration compounds: DoE CAMS + SAS area + a proposed PurpleAir unit on
+  // one site. Ringed whether or not the fan-out is on, so they read at a glance.
+  Object.values(groups).forEach(ms => {
+    if (ms[0].feature.properties.colo_kind !== "cams_sas_pa") return;
+    state.coloLayer.addLayer(L.circleMarker(siteAnchor(ms), {
+      radius: 34, color: "#d62828", weight: 1.6, dashArray: "4 4", opacity: 0.85,
+      fillColor: "#d62828", fillOpacity: 0.06, interactive: false,
+    }));
+  });
+
+  if (!state.spread || state.useCluster) return;
 
   Object.values(groups).forEach(ms => {
     if (ms.length < 2) return;
-    const lat = ms.reduce((s, m) => s + m._trueLatLng.lat, 0) / ms.length;
-    const lng = ms.reduce((s, m) => s + m._trueLatLng.lng, 0) / ms.length;
-    const anchor = L.latLng(lat, lng);
+    const anchor = siteAnchor(ms);
     const ap = state.map.latLngToLayerPoint(anchor);
     const radius = Math.min(38, 15 + 3.4 * ms.length);
 
@@ -406,8 +441,8 @@ function updateCountBadges() {
     const el = document.querySelector(`.lr-count[data-key="${key}"]`);
     if (!el) return;
     const total = state.markersByLayer[key].length;
-    const shown = state.markersByLayer[key].filter(m => passesStatus(m._status)).length;
-    el.textContent = state.statusFilter === "all" ? total : `${shown}/${total}`;
+    const shown = state.markersByLayer[key].filter(passesFilters).length;
+    el.textContent = shown === total ? total : `${shown}/${total}`;
   });
 }
 
@@ -437,6 +472,28 @@ function buildLayerControls() {
   });
 }
 
+/* ---------- DoE sheet group filter (A / B / C) ---------- */
+function buildDoeGroupFilter() {
+  const host = document.getElementById("doe-group-filter");
+  if (!host) return;
+  const totals = state.summary?.doe_group_totals || {};
+  const units = state.summary?.doe_proposed_units ?? 0;
+  const chips = [`<button class="seg-btn is-on" data-doegroup="all" title="Every unit in the DoE sheet">All ${units}</button>`];
+  Object.keys(DOE_GROUPS).forEach(g => {
+    if (!totals[g]) return;
+    chips.push(`<button class="seg-btn" data-doegroup="${g}" title="${DOE_GROUPS[g].title}">${DOE_GROUPS[g].label} · ${totals[g]}</button>`);
+  });
+  host.innerHTML = chips.join("");
+  host.querySelectorAll(".seg-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      host.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("is-on"));
+      btn.classList.add("is-on");
+      state.doeGroup = btn.dataset.doegroup;
+      refreshMarkerDisplay();
+    });
+  });
+}
+
 /* ---------- stats ---------- */
 function buildStats() {
   const bySection = s => state.allFeatures.filter(f => (LAYERS[f.properties.layer] || LAYERS.other).section === s).length;
@@ -450,6 +507,8 @@ function buildStats() {
   const stamp = [];
   if (state.summary?.built_utc) stamp.push("Data built " + state.summary.built_utc);
   if (state.summary?.colocated_sites) stamp.push(`${state.summary.colocated_sites} shared sites`);
+  if (state.summary?.cams_sas_pa_sites)
+    stamp.push(`${state.summary.cams_sas_pa_sites} CAMS+SAS+PurpleAir`);
   document.getElementById("built-stamp").textContent = stamp.join(" · ");
 }
 

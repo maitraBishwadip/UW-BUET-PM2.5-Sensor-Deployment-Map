@@ -24,11 +24,11 @@ The sidebar groups them as **My deployments** (the DoE PurpleAir 55 + the UW–B
 
 | Section | Layer | Marker | Source |
 |---|---|---|---|
-| **My · DoE PurpleAir (55)** | Co-located w/ existing CAMS+SAS | navy pin **+** | DoE "Proposed Monitoring Locations v2" |
-| | Co-located w/ rural SAS area | teal pin **+** | ” |
-| | New rural deployment | green pin **+** | ” |
-| | New urban deployment | purple pin **+** | ” |
-| | New district (no existing CAMS) | crimson pin **+** | ” |
+| **My · DoE PurpleAir (55)** | On a CAMS + SAS compound (7) | navy pin **+** | `Proposed_Monitoring_Locations_Sheet.xlsx` |
+| | On a rural SAS area (3) | teal pin **+** | ” |
+| | New rural site (23) | green pin **+** | ” |
+| | New urban site (4 — all awaiting siting) | purple pin **+** | ” |
+| | New district, no existing CAMS (18) | crimson pin **+** | ” |
 | **Super SAS (DoE)** | Source Apportionment Study area | **red ★** | DoE SAS table (7 CAMS-co-located + 3 rural) |
 | **My · UW–BUET** | DoE colocation (Block A) | blue pin **◆** | this project |
 | | Border area (Block B) | vermilion pin **◆** | this project |
@@ -42,12 +42,18 @@ The sidebar groups them as **My deployments** (the DoE PurpleAir 55 + the UW–B
 Glyphs: **◎** reference grade · **+** DoE proposed · **◆** UW–BUET · **●** low-cost.
 A **solid gradient** pin is installed; a **pale** pin is proposed or planned.
 
-### Co-located sites
+### Co-located sites, and the 7 calibration compounds
 
-19 sites host more than one station (a CAMS compound often carries CAMS + SAS + a GAIA unit + a
-proposed PurpleAir unit). The build clusters stations within **250 m** into one site, and the map
-**fans them out on a small ring** with leader lines back to the true point, so nothing is hidden.
-Each popup lists the other stations sharing that site. Toggle it with *Fan out co-located sites*.
+19 sites host more than one station. The build clusters stations within **250 m** into one site, and
+the map **fans them out on a small ring** with leader lines back to the true point, so nothing is
+hidden. Each popup lists the other stations sharing that site. Toggle it with *Fan out co-located
+sites*.
+
+Seven of those are the plan's calibration compounds — **DoE CAMS + SAS area + a proposed PurpleAir
+unit on one site** (Farmgate, TV Centre Chattogram, Sapura Rajshahi, Boyra Khulna, Red Crescent
+Sylhet, DoE HQ Mymensingh, BTV Rangpur; six also carry a GAIA unit). The build detects them
+structurally — not from a list — and tags them `colo_kind = cams_sas_pa`; the map draws a **dashed
+red ring** around each. These are the urban halves of pairs P1–P7.
 
 ### Awaiting siting
 
@@ -86,11 +92,26 @@ data/existing/
 
 ### The DoE proposed 55 (PurpleAir)
 
-These 55 rows **are** the DoE-selected PurpleAir deployment — transcribed from
-[`source_docs/PM25_Sensor_Deployment_Plan.md`](source_docs/PM25_Sensor_Deployment_Plan.md), which is
-the authority for every coordinate. The popup's *Google Maps ↗* link is built from the same lat/lon,
-so it resolves to the same point as the link in that table. (The `PA-01` row in `third_party.csv` is
-a different thing: the ~17 PurpleAir units **already operating**, not part of the 55.)
+These 55 rows **are** the DoE-selected PurpleAir deployment. The authority for every row and
+coordinate is the spreadsheet
+[`source_docs/Proposed_Monitoring_Locations_Sheet.xlsx`](source_docs/Proposed_Monitoring_Locations_Sheet.xlsx)
+(sheet *Proposed Sensor Locations*); `PM25_Sensor_Deployment_Plan.md` is a narrative restatement of
+the same plan and is kept for context only. The popup's *Google Maps ↗* link is built from the same
+lat/lon, so it resolves to the same point as the link in the sheet. (The `PA-01` row in
+`third_party.csv` is a different thing: the ~17 PurpleAir units **already operating**, not part of
+the 55.)
+
+The sheet's own grouping is preserved end to end and is a filter on the map — **A · 31** paired with
+an existing DoE CAMS, **B · 6** paired with a rural SAS area, **C · 18** in districts with no CAMS:
+
+| Group | Units | Structure |
+|---|---|---|
+| **A** | 31 | 7 urban CAMS+SAS calibration compounds + their 7 rural counterparts (pairs P1–P7), then 16 single rural sites + Satkhira (urban) |
+| **B** | 6 | 3 rural SAS areas + 3 new urban counterparts (pairs P8–P10) |
+| **C** | 18 | one per district with no existing station, sited at a government school |
+
+Patuakhali and Sunamganj are named in the sheet with no type or quantity — carried as
+`status = pending` and **excluded** from the 55.
 
 `data/doe_proposed/*.csv` rows are:
 
@@ -187,7 +208,7 @@ data/            editable CSVs (sources of truth) + boundaries
 scripts/         build_map.py  (stdlib only, no dependencies)
 docs/            the published site (index.html + assets + generated data/)
 reports/         third_party_deployments.md — survey of existing networks
-source_docs/     original DoE PDF + allocation DOCX
+source_docs/     Proposed_Monitoring_Locations_Sheet.xlsx (authority for the 55) + DoE PDF/DOCX
 .github/         Pages CI/CD workflow
 ```
 

@@ -120,8 +120,19 @@ def haversine_m(a, b) -> float:
     return 2 * 6371000 * math.asin(math.sqrt(h))
 
 
-def tag_colocations(features: list[dict]) -> int:
-    """Single-linkage cluster features within COLOCATION_RADIUS_M; tag colo_id / colo_n."""
+def doe_letter(group: str) -> str:
+    """'A.1' / 'A.2' -> 'A'.  The DoE sheet numbers sub-tables; the group is the letter."""
+    return (group or "").split(".")[0].strip().upper()
+
+
+def tag_colocations(features: list[dict]) -> tuple[int, int]:
+    """Single-linkage cluster features within COLOCATION_RADIUS_M.
+
+    Tags colo_id / colo_n on every member, and colo_kind='cams_sas_pa' on the sites where
+    a DoE reference station, a SAS area and a proposed PurpleAir unit all share one
+    compound - the seven calibration sites the DoE sheet builds Group A around.
+    Returns (number of shared sites, number of CAMS+SAS+PurpleAir sites).
+    """
     pts = [(f["geometry"]["coordinates"][1], f["geometry"]["coordinates"][0]) for f in features]
     n = len(pts)
     parent = list(range(n))
@@ -146,15 +157,25 @@ def tag_colocations(features: list[dict]) -> int:
     for i in range(n):
         members.setdefault(find(i), []).append(i)
 
-    sites = 0
+    sites = triple_sites = 0
     for root, idxs in members.items():
         if len(idxs) < 2:
             continue
         sites += 1
-        for i in idxs:
-            features[i]["properties"]["colo_id"] = f"S{root}"
-            features[i]["properties"]["colo_n"] = len(idxs)
-    return sites
+        props = [features[i]["properties"] for i in idxs]
+        layers = {p["layer"] for p in props}
+        has_ref = bool(layers & {"doe_cams", "doe_ccams"})
+        kind = ("cams_sas_pa"
+                if has_ref and "doe_sas" in layers
+                and any(p["group"] == "doe_proposed" for p in props) else "")
+        if kind:
+            triple_sites += 1
+        for p in props:
+            p["colo_id"] = f"S{root}"
+            p["colo_n"] = len(idxs)
+            if kind:
+                p["colo_kind"] = kind
+    return sites, triple_sites
 
 
 def main() -> int:
@@ -182,6 +203,7 @@ def main() -> int:
             "id": props["id"], "name": props.get("name", ""), "group": props["group"],
             "layer": props["layer"], "division": props.get("division", ""),
             "district": props.get("district", "") or props.get("city", ""),
+            "doe_group": props.get("doe_group", ""), "status": props.get("status", ""),
             "reason": reason,
         })
 
@@ -332,7 +354,7 @@ def main() -> int:
               "(generate once with mapshaper, see README)", file=sys.stderr)
         return 1
 
-    colo_sites = tag_colocations(features)
+    colo_sites, triple_sites = tag_colocations(features)
 
     # ---- write outputs ----------------------------------------------------
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -345,17 +367,23 @@ def main() -> int:
         mapped = sum(1 for f in features if f["properties"]["group"] == group)
         return mapped + sum(1 for p in pending if p["group"] == group)
 
+    # DoE sheet groups A / B / C. Rows still marked "pending" are not part of the 55.
+    doe_group_totals: dict[str, int] = {}
+    for p in [f["properties"] for f in features] + pending:
+        if p.get("group") != "doe_proposed" or p.get("status") == "pending":
+            continue
+        letter = doe_letter(p.get("doe_group", ""))
+        if letter:
+            doe_group_totals[letter] = doe_group_totals.get(letter, 0) + 1
+
     summary = {
         "built_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "total_stations": len(features),
         "colocated_sites": colo_sites,
+        "cams_sas_pa_sites": triple_sites,
         "group_totals": {g: group_total(g) for g in ("mine", "doe_proposed", "sas", "existing")},
-        "doe_proposed_units": sum(
-            1 for f in features
-            if f["properties"]["group"] == "doe_proposed"
-            and f["properties"]["status"] != "pending") + sum(
-            1 for p in pending
-            if p["group"] == "doe_proposed" and "unspecified" not in p["reason"]),
+        "doe_group_totals": dict(sorted(doe_group_totals.items())),
+        "doe_proposed_units": sum(doe_group_totals.values()),
         "layer_counts": dict(sorted(layer_counts.items())),
         "division_counts": dict(sorted(division_counts.items())),
         "pending": pending,
@@ -366,7 +394,9 @@ def main() -> int:
     print(f"\nBuild OK: {len(features)} mapped stations, {len(pending)} awaiting siting "
           f"-> docs/data/")
     print(f"  co-located sites (>=2 stations within {COLOCATION_RADIUS_M} m): {colo_sites}")
-    print(f"  DoE proposed units: {summary['doe_proposed_units']}")
+    print(f"  of which DoE CAMS + SAS + proposed PurpleAir: {triple_sites}")
+    print(f"  DoE proposed units: {summary['doe_proposed_units']}  "
+          + " ".join(f"[{g} {n}]" for g, n in summary["doe_group_totals"].items()))
     for layer, n in sorted(layer_counts.items()):
         print(f"  {layer:24s} {n}")
     return 0
