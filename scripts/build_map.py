@@ -29,6 +29,9 @@ MY_DIR = ROOT / "data" / "my_deployments"
 PROPOSED_DIR = ROOT / "data" / "doe_proposed"
 EXISTING_DIR = ROOT / "data" / "existing"
 BOUNDARY_SRC = ROOT / "data" / "boundaries" / "bd_divisions_simplified.json"
+# Extra layers the 3D globe needs; see scripts/prep_boundaries.py.
+DISTRICTS_SRC = ROOT / "data" / "boundaries" / "bd_districts_simplified.json"
+WORLD_SRC = ROOT / "data" / "boundaries" / "world_simplified.json"
 OUT_DIR = ROOT / "docs" / "data"
 
 # Bangladesh bounding box (generous, includes border strips and islands)
@@ -118,6 +121,62 @@ def haversine_m(a, b) -> float:
     dp, dl = p2 - p1, math.radians(lon2 - lon1)
     h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * 6371000 * math.asin(math.sqrt(h))
+
+
+def _rings(geom):
+    """Yield (outer_ring, holes) for every polygon in a Polygon / MultiPolygon."""
+    if geom["type"] == "Polygon":
+        yield geom["coordinates"][0], geom["coordinates"][1:]
+    elif geom["type"] == "MultiPolygon":
+        for poly in geom["coordinates"]:
+            yield poly[0], poly[1:]
+
+
+def bbox_of(geom) -> tuple[float, float, float, float]:
+    xs, ys = [], []
+    for outer, _ in _rings(geom):
+        xs.extend(p[0] for p in outer)
+        ys.extend(p[1] for p in outer)
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def _in_ring(pt, ring) -> bool:
+    x, y = pt
+    inside = False
+    for (x1, y1), (x2, y2) in zip(ring, ring[1:] + ring[:1]):
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            inside = not inside
+    return inside
+
+
+def locate_district(pt, index) -> str:
+    """Name of the district polygon containing pt, or '' if none does."""
+    x, y = pt
+    for name, (x0, y0, x1, y1), geom in index:
+        if not (x0 <= x <= x1 and y0 <= y <= y1):
+            continue
+        for outer, holes in _rings(geom):
+            if _in_ring(pt, outer) and not any(_in_ring(pt, h) for h in holes):
+                return name
+    return ""
+
+
+def nearest_district(pt, index) -> str:
+    """District whose outline passes closest to pt.
+
+    Measured to the nearest boundary vertex, not the centroid: a border site sits next to
+    one district's edge, and the district with the nearest centroid can easily be a
+    different one.
+    """
+    x, y = pt
+    best, best_d2 = "", float("inf")
+    for name, _bbox, geom in index:
+        for outer, _holes in _rings(geom):
+            for px, py in outer:
+                d2 = (px - x) ** 2 + (py - y) ** 2
+                if d2 < best_d2:
+                    best, best_d2 = name, d2
+    return best
 
 
 def doe_letter(group: str) -> str:
@@ -349,12 +408,38 @@ def main() -> int:
               file=sys.stderr)
         return 1
 
-    if not BOUNDARY_SRC.exists():
-        print(f"  ERROR    missing boundary file {BOUNDARY_SRC} "
-              "(generate once with mapshaper, see README)", file=sys.stderr)
+    missing_boundaries = [p for p in (BOUNDARY_SRC, DISTRICTS_SRC, WORLD_SRC) if not p.exists()]
+    if missing_boundaries:
+        for p in missing_boundaries:
+            print(f"  ERROR    missing boundary file {p} "
+                  "(regenerate with scripts/prep_boundaries.py, see README)", file=sys.stderr)
         return 1
 
     colo_sites, triple_sites = tag_colocations(features)
+
+    # ---- resolve each station's district (must happen before the geojson is written,
+    # because it tags district_boundary onto the features the globe reads) -------------
+    # Resolved geometrically rather than by name: several CSV rows name an upazila
+    # (Savar, Mirzapur, ...) rather than a district, and point-in-polygon gets those
+    # right where string matching cannot.
+    districts = json.loads(DISTRICTS_SRC.read_text(encoding="utf-8"))
+    district_index = [(f["properties"]["name"], bbox_of(f["geometry"]), f["geometry"])
+                      for f in districts["features"]]
+    district_counts: dict[str, int] = {}
+    snapped: list[str] = []
+    for f in features:
+        lon, lat = f["geometry"]["coordinates"]
+        name = locate_district((lon, lat), district_index)
+        if not name:
+            # Border and coastal sites can fall just outside a simplified polygon; snap to
+            # the nearest district instead of dropping them from the tally.
+            name = nearest_district((lon, lat), district_index)
+            snapped.append(f"{f['properties']['id']}->{name}")
+        f["properties"]["district_boundary"] = name
+        district_counts[name] = district_counts.get(name, 0) + 1
+    if snapped:
+        print("  NOTE     outside every simplified district polygon, snapped to the nearest: "
+              + ", ".join(snapped))
 
     # ---- write outputs ----------------------------------------------------
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -362,6 +447,8 @@ def main() -> int:
     (OUT_DIR / "deployments.geojson").write_text(
         json.dumps(geojson, ensure_ascii=False), encoding="utf-8")
     shutil.copyfile(BOUNDARY_SRC, OUT_DIR / "divisions.json")
+    shutil.copyfile(DISTRICTS_SRC, OUT_DIR / "districts.json")
+    shutil.copyfile(WORLD_SRC, OUT_DIR / "world.json")
 
     def group_total(group):
         mapped = sum(1 for f in features if f["properties"]["group"] == group)
@@ -386,6 +473,7 @@ def main() -> int:
         "doe_proposed_units": sum(doe_group_totals.values()),
         "layer_counts": dict(sorted(layer_counts.items())),
         "division_counts": dict(sorted(division_counts.items())),
+        "district_counts": dict(sorted(district_counts.items())),
         "pending": pending,
     }
     (OUT_DIR / "summary.json").write_text(

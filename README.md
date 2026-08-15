@@ -1,10 +1,10 @@
 # Bangladesh PM2.5 Sensor Deployment Map
 
-An interactive map of **every PM2.5 air-quality deployment in Bangladesh** — the DoE regulatory
-network (CAMS + C-CAMS), the 10 **Source Apportionment Study (SAS)** areas, the **DoE proposed
-55-unit PurpleAir plan**, all third-party/low-cost networks, and the **UW–BUET low-cost network**
-being planned by Bishwadip Maitra. The map rebuilds from plain CSV files and redeploys to GitHub
-Pages automatically on every push.
+An interactive **3D globe and 2D map** of **every PM2.5 air-quality deployment in Bangladesh** —
+the DoE regulatory network (CAMS + C-CAMS), the 10 **Source Apportionment Study (SAS)** areas, the
+**DoE proposed 55-unit PurpleAir plan**, all third-party/low-cost networks, and the **UW–BUET
+low-cost network** being planned by Bishwadip Maitra. Both views rebuild from plain CSV files and
+redeploy to GitHub Pages automatically on every push.
 
 **Live map:** https://maitrabishwadip.github.io/UW-BUET-PM2.5-Sensor-Deployment-Map/
 *(available once GitHub Pages is enabled — see [First-time setup](#first-time-setup))*
@@ -13,9 +13,32 @@ Pages automatically on every push.
 
 ---
 
+## Two views
+
+The site opens on a **3D globe** and keeps the original **2D map** a click away; whichever you pick
+is remembered for next time.
+
+| | 3D globe (default) | 2D map |
+|---|---|---|
+| Renderer | hand-written orthographic projection on a `<canvas>` — no library | Leaflet (vendored) |
+| Basemap | world country outlines + all **64 Bangladesh districts** | Carto / OSM / Esri satellite tiles |
+| Extras | districts shade by how many deployments they hold; district labels appear as you zoom | marker clustering, division shading, co-location fan-out |
+| Controls | drag to spin, scroll to zoom, click a district to zoom into it, click a pin for its details | the usual Leaflet controls |
+
+It opens on the whole globe and flies down to Bangladesh once, then hands over to you. Zoomed all
+the way out the country carries a single badge with the live deployment count rather than 180
+overlapping pins; zoom in and the individual pins take over. Past district detail it points you at
+the 2D map, which is where the streets and satellite imagery live.
+
+Both views read the same state: the sidebar's layer toggles, status filter, A/B/C group filter and
+search drive whichever one is on screen.
+
+The globe has no browser in its build loop, so its projection and render path are covered by
+`scripts/test_globe_math.js` and `scripts/test_globe_render.js`, which run in CI on every push.
+
 ## What's on the map
 
-Every deployment is drawn as a **map pin**. **Colour** identifies the layer; the **glyph in the pin
+Every deployment is drawn as a **map pin** — the same pin, star, colour and glyph in both views. **Colour** identifies the layer; the **glyph in the pin
 head** identifies the family, so four networks stacked on one compound stay readable. Super SAS
 sites break the pattern deliberately — they are **red stars ★**.
 
@@ -157,12 +180,17 @@ example row, uncomment it, fill in name/division/district (and lat/lon when know
 
 ```bash
 python scripts/build_map.py            # validates CSVs -> docs/data/*.json  (fails loudly on bad rows)
+node scripts/test_globe_math.js        # globe projection: round-trip, horizon, drag tracking
+node scripts/test_globe_render.js      # globe render path, headless, against the data just built
 python -m http.server -d docs 8000     # then open http://localhost:8000
 ```
 
 The build **fails with a clear message** (and non-zero exit, which also fails CI) on: out-of-bounds
 coordinates, unknown `status`/`category`/`role`/`division`, duplicate ids, or missing columns.
 Empty-coordinate rows are reported as `PENDING` and surface in the map's *Awaiting siting* panel.
+Stations are also assigned to a district by point-in-polygon (not by the `district` column, which
+sometimes names an upazila), and any that land outside every simplified polygon — border sites,
+mostly — are reported as snapped to the nearest.
 
 ---
 
@@ -189,15 +217,27 @@ Pages must be enabled once:
 
 ---
 
-## Regenerating the boundary file (rarely needed)
+## Regenerating the boundary files (rarely needed)
 
-`data/boundaries/bd_divisions_simplified.json` (91 KB) is a one-time simplification of the 32 MB
-`bd.json`. Only regenerate if the source boundary changes:
+`data/boundaries/` holds three committed, pre-simplified layers. They only need regenerating if a
+source changes.
+
+| File | What | Source |
+|---|---|---|
+| `bd_divisions_simplified.json` (91 KB) | 8 divisions | one-time simplification of the 32 MB `bd.json` (simplemaps) |
+| `bd_districts_simplified.json` (66 KB) | 64 districts, each tagged with its division and centroid | [geoBoundaries](https://www.geoboundaries.org/) gbOpen BGD ADM2, **CC BY 4.0** |
+| `world_simplified.json` (45 KB) | 176 country outlines for the globe's context | [Natural Earth](https://www.naturalearthdata.com/) 110m admin-0, public domain |
 
 ```bash
 npx mapshaper data/boundaries/bd.json -simplify keep-shapes 2% -clean \
   -o precision=0.0001 format=geojson data/boundaries/bd_divisions_simplified.json
 ```
+
+The district and world layers are simplified with mapshaper (topology-preserving, so neighbouring
+districts keep their shared edges) and then normalised by
+[`scripts/prep_boundaries.py`](scripts/prep_boundaries.py), which rewrites geoBoundaries' older
+district spellings (Barisal → Barishal, Bogra → Bogura, Jessore → Jashore, …) to the ones the CSVs
+use and assigns each district its division. The exact commands are in that script's docstring.
 
 ---
 
@@ -205,12 +245,17 @@ npx mapshaper data/boundaries/bd.json -simplify keep-shapes 2% -clean \
 
 ```
 data/            editable CSVs (sources of truth) + boundaries
-scripts/         build_map.py  (stdlib only, no dependencies)
-docs/            the published site (index.html + assets + generated data/)
+scripts/         build_map.py, prep_boundaries.py (stdlib only) + the two globe tests (node)
+docs/            the published site
+                   index.html, assets/app.js (2D map), assets/globe.js (3D globe),
+                   assets/vendor/ (Leaflet), data/ (generated - do not hand-edit)
 reports/         third_party_deployments.md — survey of existing networks
 source_docs/     Proposed_Monitoring_Locations_Sheet.xlsx (authority for the 55) + DoE PDF/DOCX
 .github/         Pages CI/CD workflow
 ```
+
+Neither view pulls in a mapping library from a CDN: Leaflet is vendored under
+`docs/assets/vendor/`, and the globe is plain canvas with no dependency at all.
 
 Coordinates for every planned sensor are planning-stage approximations; confirm exact sites by
 reconnaissance before installation. Where the DoE table named only a district, the nearest

@@ -25,8 +25,20 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Build map data from CSVs
         run: python scripts/build_map.py
+
+      # The globe is hand-rolled canvas code with no browser in the loop, so its
+      # projection and render path are checked headlessly against the data just built.
+      - name: Check the globe's projection maths
+        run: node scripts/test_globe_math.js
+
+      - name: Smoke-test the globe's render path
+        run: node scripts/test_globe_render.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -10,6 +10,20 @@
   --sidebar-w: 340px;
   --shadow: 0 1px 3px rgba(11,11,11,0.08), 0 6px 18px rgba(11,11,11,0.06);
   color-scheme: light;
+
+  /* 3D globe palette (read by globe.js at draw time) */
+  --globe-space: #eceae4;
+  --globe-ocean: #d3e3f1;
+  --globe-ocean-deep: #93b8d6;
+  --globe-land: #eae7de;
+  --globe-land-stroke: #c0bbae;
+  --globe-graticule: rgba(70,90,110,0.15);
+  --globe-district: #f5f1e7;
+  --globe-district-stroke: #b6ae9d;
+  --globe-bd-stroke: #33507a;
+  --globe-choropleth: 42,120,214;
+  --globe-label: #3f4a57;
+  --globe-label-halo: #ffffff;
 }
 :root[data-theme="dark"] {
   --surface-1: #1a1a19;
@@ -22,6 +36,19 @@
   --accent: #3987e5;
   --shadow: 0 1px 3px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.4);
   color-scheme: dark;
+
+  --globe-space: #0a0a0c;
+  --globe-ocean: #163350;
+  --globe-ocean-deep: #081a2c;
+  --globe-land: #2b2b28;
+  --globe-land-stroke: #4a4a44;
+  --globe-graticule: rgba(150,180,210,0.13);
+  --globe-district: #343430;
+  --globe-district-stroke: #56564e;
+  --globe-bd-stroke: #7fb0f0;
+  --globe-choropleth: 90,160,240;
+  --globe-label: #dcdad2;
+  --globe-label-halo: rgba(10,10,12,0.9);
 }
 
 * { box-sizing: border-box; }
@@ -140,8 +167,60 @@ body {
   border: 1px solid var(--hairline); font-size: 10px; }
 .side-foot a { color: var(--accent); }
 
-/* map */
-#map { flex: 1; height: 100%; background: var(--page); }
+/* stage: the 3D globe and the 2D map share it, one visible at a time */
+#stage { flex: 1; height: 100%; position: relative; overflow: hidden; }
+#map { position: absolute; inset: 0; background: var(--page); }
+#map.is-hidden { display: none; }
+#globe-wrap { position: absolute; inset: 0; }
+#globe-wrap[hidden] { display: none; }
+#globe-canvas { display: block; width: 100%; height: 100%;
+  cursor: grab; touch-action: none; }
+#globe-canvas:active { cursor: grabbing; }
+
+.globe-tools {
+  position: absolute; top: 12px; right: 12px; z-index: 5;
+  display: flex; align-items: center; gap: 4px; padding: 4px;
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  border-radius: 9px; box-shadow: var(--shadow);
+}
+.globe-tools button {
+  border: none; background: none; color: var(--text-secondary); cursor: pointer;
+  font-size: 12px; padding: 5px 9px; border-radius: 6px; font-family: inherit;
+}
+.globe-tools button:hover { background: var(--page); color: var(--text-primary); }
+.globe-tools #globe-zoom-in, .globe-tools #globe-zoom-out {
+  font-size: 15px; line-height: 1; padding: 4px 9px; }
+.gt-sep { width: 1px; height: 18px; background: var(--hairline); }
+
+.globe-tip {
+  position: absolute; z-index: 6; pointer-events: none;
+  background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--ring); border-radius: 6px; box-shadow: var(--shadow);
+  font-size: 12px; font-weight: 600; padding: 4px 8px; white-space: nowrap;
+  transform: translateY(-100%);
+}
+.globe-flash, .globe-hint {
+  position: absolute; left: 50%; transform: translateX(-50%); z-index: 6;
+  background: var(--surface-1); color: var(--text-secondary);
+  border: 1px solid var(--hairline); border-radius: 20px; box-shadow: var(--shadow);
+  font-size: 12px; padding: 6px 14px; white-space: nowrap; max-width: 90%;
+}
+.globe-flash { top: 14px; color: var(--text-primary); font-weight: 600; }
+.globe-hint { bottom: 16px; }
+.linkish { border: none; background: none; color: var(--accent); cursor: pointer;
+  font: inherit; padding: 0; text-decoration: underline; }
+
+.globe-card {
+  position: absolute; left: 14px; bottom: 14px; z-index: 7; width: 310px; max-width: 46%;
+  background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 12px 14px; max-height: 62%; overflow-y: auto;
+}
+.globe-card .pop h3 { margin-right: 22px; }
+.card-close {
+  position: absolute; top: 6px; right: 8px; border: none; background: none;
+  color: var(--muted); font-size: 19px; line-height: 1; cursor: pointer; padding: 2px 5px;
+}
+.card-close:hover { color: var(--text-primary); }
 .sidebar-open {
   position: absolute; top: 12px; left: 12px; z-index: 1100;
   padding: 8px 12px; border-radius: 8px; border: 1px solid var(--hairline);

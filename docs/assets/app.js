@@ -154,6 +154,7 @@ const state = {
   map: null, baseLayer: null, divisionLayer: null, coloLayer: null,
   markersByLayer: {}, clusterByLayer: {}, useCluster: false, spread: true,
   enabled: {}, statusFilter: "all", doeGroup: "all", allFeatures: [], summary: null,
+  view: "globe",
 };
 
 /* ---------- load & init ---------- */
@@ -161,10 +162,12 @@ async function boot() {
   document.getElementById("repo-link").innerHTML =
     `<a href="${REPO_URL}" target="_blank" rel="noopener">Source &amp; how to update ↗</a>`;
 
-  const [geo, divisions, summary] = await Promise.all([
+  const [geo, divisions, summary, world, districts] = await Promise.all([
     fetch("data/deployments.geojson").then(r => r.json()),
     fetch("data/divisions.json").then(r => r.json()),
     fetch("data/summary.json").then(r => r.json()).catch(() => null),
+    fetch("data/world.json").then(r => r.json()).catch(() => null),
+    fetch("data/districts.json").then(r => r.json()).catch(() => null),
   ]);
   state.allFeatures = geo.features;
   state.summary = summary;
@@ -178,6 +181,34 @@ async function boot() {
   buildPending();
   wireUI();
   applyHashView();
+
+  if (typeof Globe !== "undefined") Globe.init({ world, districts, divisions });
+  setView(savedView());
+}
+
+/* ---------- 3D globe / 2D map switch ----------
+ * The globe is the default view; whichever one you pick is remembered for next time. */
+function savedView() {
+  try { return localStorage.getItem("bd-pm25-view") === "map" ? "map" : "globe"; }
+  catch { return "globe"; }
+}
+
+function setView(v) {
+  state.view = v === "map" ? "map" : "globe";
+  try { localStorage.setItem("bd-pm25-view", state.view); } catch { /* private mode */ }
+  const onMap = state.view === "map";
+  document.getElementById("map").classList.toggle("is-hidden", !onMap);
+  document.getElementById("globe-wrap").hidden = onMap;
+  document.querySelectorAll("#view-switch .seg-btn").forEach(b =>
+    b.classList.toggle("is-on", b.dataset.view === state.view));
+  // options that only mean something on one of the two views
+  document.getElementById("map-options").hidden = !onMap;
+  document.getElementById("globe-options-note").hidden = onMap;
+  if (onMap) {
+    setTimeout(() => state.map.invalidateSize(), 30);
+  } else if (typeof Globe !== "undefined" && Globe.isReady()) {
+    Globe.resize();
+  }
 }
 
 function initMap() {
@@ -379,6 +410,7 @@ function refreshMarkerDisplay() {
   });
   applyColoSpread();
   updateCountBadges();
+  if (typeof Globe !== "undefined" && Globe.isReady()) Globe.draw();
 }
 
 /* ---------- co-located site fan-out ----------
@@ -539,6 +571,10 @@ function wireUI() {
     setTimeout(() => state.map.invalidateSize(), 300);
   });
 
+  document.querySelectorAll("#view-switch .seg-btn").forEach(btn => {
+    btn.addEventListener("click", () => setView(btn.dataset.view));
+  });
+
   document.querySelectorAll("#status-filter .seg-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("#status-filter .seg-btn").forEach(b => b.classList.remove("is-on"));
@@ -579,6 +615,7 @@ function wireUI() {
     const sel = document.getElementById("opt-basemap");
     if (dark && sel.value === "carto") { sel.value = "cartodark"; setBasemap("cartodark"); }
     if (!dark && sel.value === "cartodark") { sel.value = "carto"; setBasemap("carto"); }
+    if (typeof Globe !== "undefined" && Globe.isReady()) Globe.draw();
   });
   document.getElementById("opt-basemap").addEventListener("change", e => setBasemap(e.target.value));
 
@@ -629,6 +666,11 @@ function wireSearch() {
       const cb = document.querySelector(`input[data-key="${item.key}"]`);
       if (cb) { cb.checked = true; cb.closest(".layer-row").classList.remove("is-off"); }
       refreshMarkerDisplay();
+    }
+    if (state.view === "globe" && typeof Globe !== "undefined" && Globe.isReady()) {
+      Globe.flyToFeature(item.f);
+      results.hidden = true; input.blur();
+      return;
     }
     state.map.flyTo([lat, lng], 14, { duration: 0.8 });
     const marker = state.markersByLayer[item.key].find(m => m.feature.properties.id === item.p.id);
