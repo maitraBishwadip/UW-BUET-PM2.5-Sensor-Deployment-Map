@@ -154,7 +154,6 @@ const state = {
   map: null, baseLayer: null, divisionLayer: null, coloLayer: null,
   markersByLayer: {}, clusterByLayer: {}, useCluster: false, spread: true,
   enabled: {}, statusFilter: "all", doeGroup: "all", allFeatures: [], summary: null,
-  view: "globe",
 };
 
 /* ---------- load & init ---------- */
@@ -162,12 +161,10 @@ async function boot() {
   document.getElementById("repo-link").innerHTML =
     `<a href="${REPO_URL}" target="_blank" rel="noopener">Source &amp; how to update ↗</a>`;
 
-  const [geo, divisions, summary, world, districts] = await Promise.all([
+  const [geo, divisions, summary] = await Promise.all([
     fetch("data/deployments.geojson").then(r => r.json()),
     fetch("data/divisions.json").then(r => r.json()),
     fetch("data/summary.json").then(r => r.json()).catch(() => null),
-    fetch("data/world.json").then(r => r.json()).catch(() => null),
-    fetch("data/districts.json").then(r => r.json()).catch(() => null),
   ]);
   state.allFeatures = geo.features;
   state.summary = summary;
@@ -181,63 +178,6 @@ async function boot() {
   buildPending();
   wireUI();
   applyHashView();
-
-  if (typeof Globe3D !== "undefined") Globe3D.setData({ world, districts });
-  setView(savedView());
-}
-
-/* ---------- 3D globe / 2D map switch ----------
- * The globe is the default view; whichever one you pick is remembered for next time.
- * Switching to the globe can fail (the library is loaded on demand, and it needs WebGL),
- * so setView falls back to the 2D map rather than leaving an empty stage. */
-function savedView() {
-  try { return localStorage.getItem("bd-pm25-view") === "map" ? "map" : "globe"; }
-  catch { return "globe"; }
-}
-
-async function setView(v) {
-  const want = v === "map" ? "map" : "globe";
-  state.view = want;
-  try { localStorage.setItem("bd-pm25-view", want); } catch { /* private mode */ }
-  paintView(want);
-
-  if (want === "map") {
-    // Leaflet measures its container on creation; it was display:none then, so tell it to
-    // re-measure every time it comes back on screen.
-    requestAnimationFrame(() => state.map.invalidateSize());
-    return;
-  }
-  let ok = false;
-  try {
-    ok = typeof Globe3D !== "undefined" && await Globe3D.activate();
-  } catch (err) {
-    console.error(err);
-  }
-  if (!ok && state.view === "globe") {
-    state.view = "map";
-    try { localStorage.setItem("bd-pm25-view", "map"); } catch { /* ignore */ }
-    paintView("map");
-    requestAnimationFrame(() => state.map.invalidateSize());
-  }
-}
-
-function paintView(view) {
-  const onMap = view === "map";
-  document.getElementById("map").classList.toggle("is-hidden", !onMap);
-  document.getElementById("globe-wrap").hidden = onMap;
-  document.getElementById("globe-tools").hidden = onMap;
-  document.querySelectorAll("#view-switch .vs-btn").forEach(b =>
-    b.classList.toggle("is-on", b.dataset.view === view));
-  // options that only mean something on one of the two views
-  document.getElementById("map-options").hidden = !onMap;
-  document.getElementById("globe-options-note").hidden = onMap;
-  if (onMap) document.getElementById("globe-card").hidden = true;
-}
-
-/* ---------- the layers/filters drawer ---------- */
-function setSidebar(open) {
-  document.getElementById("app").classList.toggle("side-closed", !open);
-  try { localStorage.setItem("bd-pm25-side", open ? "open" : "closed"); } catch { /* ignore */ }
 }
 
 function initMap() {
@@ -439,7 +379,6 @@ function refreshMarkerDisplay() {
   });
   applyColoSpread();
   updateCountBadges();
-  if (typeof Globe3D !== "undefined" && Globe3D.isReady()) Globe3D.refresh();
 }
 
 /* ---------- co-located site fan-out ----------
@@ -589,26 +528,16 @@ function buildPending() {
 
 /* ---------- UI wiring ---------- */
 function wireUI() {
-  // The drawer overlays the stage, so opening it never resizes either renderer.
-  document.getElementById("side-toggle").addEventListener("click", () => setSidebar(false));
-  document.getElementById("sidebar-open").addEventListener("click", () => setSidebar(true));
-  try { setSidebar(localStorage.getItem("bd-pm25-side") === "open"); }
-  catch { setSidebar(false); }
-
-  document.querySelectorAll("#view-switch .vs-btn").forEach(btn => {
-    btn.addEventListener("click", () => setView(btn.dataset.view));
+  const app = document.getElementById("app");
+  const openBtn = document.getElementById("sidebar-open");
+  document.getElementById("side-toggle").addEventListener("click", () => {
+    app.classList.add("side-collapsed"); openBtn.hidden = false;
+    setTimeout(() => state.map.invalidateSize(), 300);
   });
-
-  // Both renderers need a concrete pixel size; give them one whenever the window changes.
-  const onResize = () => {
-    if (state.view === "map") state.map.invalidateSize();
-    else if (typeof Globe3D !== "undefined" && Globe3D.isReady()) Globe3D.resize();
-  };
-  window.addEventListener("resize", onResize);
-  window.addEventListener("orientationchange", onResize);
-  if (typeof ResizeObserver !== "undefined") {
-    new ResizeObserver(onResize).observe(document.getElementById("stage"));
-  }
+  openBtn.addEventListener("click", () => {
+    app.classList.remove("side-collapsed"); openBtn.hidden = true;
+    setTimeout(() => state.map.invalidateSize(), 300);
+  });
 
   document.querySelectorAll("#status-filter .seg-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -650,7 +579,6 @@ function wireUI() {
     const sel = document.getElementById("opt-basemap");
     if (dark && sel.value === "carto") { sel.value = "cartodark"; setBasemap("cartodark"); }
     if (!dark && sel.value === "cartodark") { sel.value = "carto"; setBasemap("carto"); }
-    if (typeof Globe3D !== "undefined" && Globe3D.isReady()) Globe3D.applyTheme();
   });
   document.getElementById("opt-basemap").addEventListener("change", e => setBasemap(e.target.value));
 
@@ -702,11 +630,6 @@ function wireSearch() {
       if (cb) { cb.checked = true; cb.closest(".layer-row").classList.remove("is-off"); }
       refreshMarkerDisplay();
     }
-    if (state.view === "globe" && typeof Globe3D !== "undefined" && Globe3D.isReady()) {
-      Globe3D.flyToFeature(item.f);
-      results.hidden = true; input.blur();
-      return;
-    }
     state.map.flyTo([lat, lng], 14, { duration: 0.8 });
     const marker = state.markersByLayer[item.key].find(m => m.feature.properties.id === item.p.id);
     if (marker) setTimeout(() => marker.openPopup(), 900);
@@ -717,12 +640,8 @@ function wireSearch() {
   });
 }
 
-/* ---------- shareable view via URL hash ----------
- * Only the 2D map writes to the hash. It is created hidden and fires moveend while it is
- * off screen, which used to stamp a meaningless #0/... on the URL before you had touched
- * anything. */
+/* ---------- shareable view via URL hash ---------- */
 function writeHashView() {
-  if (state.view !== "map") return;
   const c = state.map.getCenter();
   location.replace(`#${state.map.getZoom()}/${c.lat.toFixed(3)}/${c.lng.toFixed(3)}`);
 }

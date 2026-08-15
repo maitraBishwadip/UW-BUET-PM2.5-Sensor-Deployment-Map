@@ -4,17 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bangladesh PM2.5 Sensor Deployment Map</title>
-  <meta name="description" content="Interactive 3D globe and 2D map of PM2.5 air-quality sensor deployments across Bangladesh — DoE CAMS/C-CAMS, the 10 Source Apportionment Study areas, the DoE proposed 55-unit PurpleAir plan, third-party networks, and the UW–BUET low-cost network." />
+  <meta name="description" content="Interactive map of PM2.5 air-quality sensor deployments across Bangladesh — DoE CAMS/C-CAMS, Super SAS Aria stations, the DoE proposed 55-unit low-cost plan, third-party networks, and the UW–BUET low-cost network." />
   <link rel="stylesheet" href="assets/vendor/leaflet.css" />
   <link rel="stylesheet" href="assets/vendor/MarkerCluster.css" />
   <link rel="stylesheet" href="assets/vendor/MarkerCluster.Default.css" />
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
-  <div id="app" class="side-closed">
+  <div id="app">
     <aside id="sidebar" aria-label="Map controls">
       <header class="side-head">
-        <button id="side-toggle" class="side-toggle" aria-label="Close panel" title="Close">×</button>
+        <button id="side-toggle" class="side-toggle" aria-label="Collapse sidebar" title="Collapse / expand">‹</button>
         <div class="side-title">
           <h1>Bangladesh PM<sub>2.5</sub> Deployments</h1>
           <p class="subtitle">DoE reference network · Super SAS · DoE proposed 55 · third-party · UW–BUET</p>
@@ -113,65 +113,33 @@
 
         <section class="panel">
           <h2 class="panel-h">Options</h2>
+          <label class="opt"><input type="checkbox" id="opt-spread" checked /> Fan out co-located sites</label>
+          <label class="opt"><input type="checkbox" id="opt-cluster" /> Cluster dense markers</label>
+          <label class="opt"><input type="checkbox" id="opt-divlabels" checked /> Division shading &amp; counts</label>
           <label class="opt"><input type="checkbox" id="opt-theme" /> Dark mode</label>
-          <div id="map-options">
-            <label class="opt"><input type="checkbox" id="opt-spread" checked /> Fan out co-located sites</label>
-            <label class="opt"><input type="checkbox" id="opt-cluster" /> Cluster dense markers</label>
-            <label class="opt"><input type="checkbox" id="opt-divlabels" checked /> Division shading &amp; counts</label>
-            <label class="opt-select">Basemap
-              <select id="opt-basemap">
-                <option value="carto">Carto Light</option>
-                <option value="osm">OpenStreetMap</option>
-                <option value="esri">Satellite</option>
-                <option value="cartodark">Carto Dark</option>
-              </select>
-            </label>
-          </div>
-          <p class="legend-note" id="globe-options-note">
-            On the globe: <strong>drag</strong> to spin, <strong>scroll</strong> to zoom,
-            <strong>click a district</strong> to zoom into it, <strong>click a pin</strong> for
-            its details. Districts shade by how many deployments they hold.
-          </p>
+          <label class="opt-select">Basemap
+            <select id="opt-basemap">
+              <option value="carto">Carto Light</option>
+              <option value="osm">OpenStreetMap</option>
+              <option value="esri">Satellite</option>
+              <option value="cartodark">Carto Dark</option>
+            </select>
+          </label>
         </section>
 
         <footer class="side-foot">
           <p>Edit the CSVs in <code>data/</code>, rerun <code>build_map.py</code>, push — the live map updates.</p>
-          <p>District boundaries <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries</a>
-            (CC BY 4.0) · world outlines <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>.</p>
           <p id="repo-link"></p>
         </footer>
       </div>
     </aside>
 
-    <main id="stage" aria-label="Deployment map">
-      <div id="globe-wrap" aria-label="3D globe of Bangladesh deployments"></div>
-      <div id="map" class="is-hidden"></div>
-
-      <button id="sidebar-open" class="sidebar-open" aria-label="Open layers and filters">
-        ☰ Layers &amp; filters
-      </button>
-
-      <div class="globe-tools" id="globe-tools">
-        <button type="button" id="globe-fit-bd" title="Zoom to the deployments">Bangladesh</button>
-        <button type="button" id="globe-fit-world" title="Zoom out to the whole globe">Whole globe</button>
-        <span class="gt-sep"></span>
-        <button type="button" id="globe-zoom-in" aria-label="Zoom in">+</button>
-        <button type="button" id="globe-zoom-out" aria-label="Zoom out">−</button>
-      </div>
-
-      <div id="globe-card" class="globe-card" hidden></div>
-      <div id="globe-msg" class="globe-msg" hidden></div>
-
-      <div id="view-switch" class="view-switch" role="tablist" aria-label="Map view">
-        <button class="vs-btn is-on" data-view="globe" role="tab">🌐 3D globe</button>
-        <button class="vs-btn" data-view="map" role="tab">🗺 2D map</button>
-      </div>
-    </main>
+    <main id="map" aria-label="Deployment map"></main>
+    <button id="sidebar-open" class="sidebar-open" hidden aria-label="Open controls">☰ Controls</button>
   </div>
 
   <script src="assets/vendor/leaflet.js"></script>
   <script src="assets/vendor/leaflet.markercluster.js"></script>
-  <script src="assets/globe.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>

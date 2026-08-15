@@ -10,16 +10,6 @@
   --sidebar-w: 340px;
   --shadow: 0 1px 3px rgba(11,11,11,0.08), 0 6px 18px rgba(11,11,11,0.06);
   color-scheme: light;
-
-  /* 3D globe palette (read by globe.js when it builds / re-themes the globe) */
-  --globe-ocean: #b9d4ea;
-  --globe-land: #ece8de;
-  --globe-land-side: #d4cfc2;
-  --globe-land-stroke: #b3ada0;
-  --globe-district: #f6f2e8;
-  --globe-district-stroke: #7d90ab;
-  --globe-choropleth: 42,120,214;
-  --globe-atmosphere: #9ec6ea;
 }
 :root[data-theme="dark"] {
   --surface-1: #1a1a19;
@@ -32,15 +22,6 @@
   --accent: #3987e5;
   --shadow: 0 1px 3px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.4);
   color-scheme: dark;
-
-  --globe-ocean: #10293f;
-  --globe-land: #33332e;
-  --globe-land-side: #26261f;
-  --globe-land-stroke: #55554c;
-  --globe-district: #3c3c36;
-  --globe-district-stroke: #6d829c;
-  --globe-choropleth: 90,160,240;
-  --globe-atmosphere: #2f5f8c;
 }
 
 * { box-sizing: border-box; }
@@ -52,29 +33,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* App shell: pinned to the viewport so the stage always has real dimensions - the globe
-   and Leaflet both need to be told a concrete pixel size, and a shell that depends on
-   document flow can hand them zero. The sidebar overlays the stage rather than shrinking
-   it, so neither view ever has to be re-measured when the panel opens. */
-#app { position: fixed; inset: 0; overflow: hidden; }
+#app { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
 
-/* ---- sidebar: a drawer, opened from the ☰ button ---- */
+/* ---- sidebar ---- */
 #sidebar {
-  position: absolute; top: 0; left: 0; bottom: 0;
   width: var(--sidebar-w);
-  max-width: 92vw;
+  min-width: var(--sidebar-w);
+  height: 100%;
   background: var(--surface-1);
   border-right: 1px solid var(--hairline);
   display: flex;
   flex-direction: column;
-  transform: translateX(0);
-  transition: transform .24s ease;
-  box-shadow: var(--shadow);
-  z-index: 1600;
+  transition: margin-left .25s ease;
+  z-index: 1200;
 }
-#app.side-closed #sidebar { transform: translateX(-101%); }
-#app:not(.side-closed) .sidebar-open { display: none; }
-@media (prefers-reduced-motion: reduce) { #sidebar { transition: none; } }
+#app.side-collapsed #sidebar { margin-left: calc(-1 * var(--sidebar-w)); }
 
 .side-head {
   display: flex; align-items: flex-start; gap: 8px;
@@ -167,81 +140,14 @@ body {
   border: 1px solid var(--hairline); font-size: 10px; }
 .side-foot a { color: var(--accent); }
 
-/* stage: the 3D globe and the 2D map share it, one visible at a time. It fills the whole
-   shell, so both renderers get the full window no matter what the sidebar is doing. */
-#stage { position: absolute; inset: 0; overflow: hidden; background: var(--page); }
-#map { position: absolute; inset: 0; background: var(--page); }
-#map.is-hidden { display: none; }
-#globe-wrap { position: absolute; inset: 0; overflow: hidden;
-  cursor: grab; touch-action: none; }
-#globe-wrap:active { cursor: grabbing; }
-#globe-wrap[hidden] { display: none; }
-#globe-wrap canvas { display: block; }
-
-/* globe.gl renders marker pins as positioned DOM nodes over the WebGL canvas */
-.g-pin { transition: opacity .18s ease; will-change: opacity; }
-.g-pin svg { display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
-.g-pin:hover svg { transform: scale(1.18); transform-origin: 50% 100%; }
-.g-label { font: 12px system-ui, sans-serif; line-height: 1.35; }
-
-/* bottom-centre view switch */
-.view-switch {
-  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 900;
-  display: flex; gap: 3px; padding: 4px;
-  background: var(--surface-1); border: 1px solid var(--hairline);
-  border-radius: 24px; box-shadow: var(--shadow);
-}
-.vs-btn {
-  border: none; background: none; color: var(--text-secondary); cursor: pointer;
-  font: 500 13px/1 system-ui, sans-serif; padding: 9px 16px; border-radius: 20px;
-  white-space: nowrap;
-}
-.vs-btn:hover { color: var(--text-primary); background: var(--page); }
-.vs-btn.is-on { background: var(--accent); color: #fff; font-weight: 600; }
-
-.globe-msg {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 800;
-  background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px;
-  box-shadow: var(--shadow); padding: 12px 18px; font-size: 13px;
-  color: var(--text-secondary); max-width: 80%; text-align: center;
-}
-.globe-msg code { font-size: 11.5px; background: var(--page); padding: 1px 4px;
-  border-radius: 4px; }
-
-.globe-tools {
-  position: absolute; top: 12px; right: 12px; z-index: 900;
-  display: flex; align-items: center; gap: 4px; padding: 4px;
-  background: var(--surface-1); border: 1px solid var(--hairline);
-  border-radius: 9px; box-shadow: var(--shadow);
-}
-.globe-tools button {
-  border: none; background: none; color: var(--text-secondary); cursor: pointer;
-  font-size: 12px; padding: 5px 9px; border-radius: 6px; font-family: inherit;
-}
-.globe-tools[hidden] { display: none; }   /* display:flex would otherwise beat [hidden] */
-.globe-tools button:hover { background: var(--page); color: var(--text-primary); }
-.globe-tools #globe-zoom-in, .globe-tools #globe-zoom-out {
-  font-size: 15px; line-height: 1; padding: 4px 9px; }
-.gt-sep { width: 1px; height: 18px; background: var(--hairline); }
-
-.globe-card {
-  position: absolute; left: 14px; bottom: 74px; z-index: 950; width: 310px; max-width: 46%;
-  background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px;
-  box-shadow: var(--shadow); padding: 12px 14px; max-height: 62%; overflow-y: auto;
-}
-.globe-card .pop h3 { margin-right: 22px; }
-.card-close {
-  position: absolute; top: 6px; right: 8px; border: none; background: none;
-  color: var(--muted); font-size: 19px; line-height: 1; cursor: pointer; padding: 2px 5px;
-}
-.card-close:hover { color: var(--text-primary); }
+/* map */
+#map { flex: 1; height: 100%; background: var(--page); }
 .sidebar-open {
-  position: absolute; top: 12px; left: 12px; z-index: 900;
-  padding: 9px 14px; border-radius: 22px; border: 1px solid var(--hairline);
+  position: absolute; top: 12px; left: 12px; z-index: 1100;
+  padding: 8px 12px; border-radius: 8px; border: 1px solid var(--hairline);
   background: var(--surface-1); color: var(--text-primary); cursor: pointer;
-  font: 500 13px/1 system-ui, sans-serif; box-shadow: var(--shadow);
+  font-size: 13px; box-shadow: var(--shadow);
 }
-.sidebar-open:hover { border-color: var(--accent); color: var(--accent); }
 
 /* Leaflet marker icons (SVG divIcons) */
 .pin { display: block; }
@@ -297,11 +203,6 @@ body {
   vertical-align: -1px; margin-right: 2px; }
 
 @media (max-width: 720px) {
-  :root { --sidebar-w: 310px; }
-  .globe-card { width: auto; left: 10px; right: 10px; max-width: none; bottom: 70px;
-    max-height: 45%; }
-  .globe-tools { top: 10px; right: 10px; }
-  .globe-tools button { padding: 5px 7px; font-size: 11.5px; }
-  .vs-btn { padding: 9px 13px; font-size: 12.5px; }
-  .sidebar-open { font-size: 12.5px; padding: 8px 12px; }
+  :root { --sidebar-w: 300px; }
+  #sidebar { position: absolute; inset: 0 auto 0 0; box-shadow: var(--shadow); }
 }

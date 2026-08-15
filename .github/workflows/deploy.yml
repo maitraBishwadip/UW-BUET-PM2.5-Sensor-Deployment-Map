@@ -25,18 +25,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Build map data from CSVs
         run: python scripts/build_map.py
-
-      # Rendering is globe.gl's job; what is ours is the data handed to it - which
-      # stations pass the sidebar's filters, and the per-district tallies behind the
-      # choropleth. Checked against the files the build just produced.
-      - name: Check the globe's data layer
-        run: node scripts/test_globe_data.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
