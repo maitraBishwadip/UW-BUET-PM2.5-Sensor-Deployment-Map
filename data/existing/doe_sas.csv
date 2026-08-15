@@ -1,0 +1,21 @@
+# Super SAS deployments (SAS Aria reference stations, DoE).
+# Rendered as RED STARS on the map - its own sidebar section.
+#
+# Rows SAS-1..SAS-7  : the seven sites the DoE table marks "Existing CAMS+SAS". The source table
+#                      gives no coordinates for them, so lat/lon are taken from the co-located CAMS
+#                      station in doe_cams.csv (coord_precision = derived).
+# Rows SAS-8..SAS-10 : the three districts where the SAS Aria already sits in a RURAL area
+#                      (Bhola, Munshiganj, Dinajpur). The source table gives no SAS coordinates;
+#                      lat/lon are the paired rural anchor site from the proposal, so they are
+#                      APPROXIMATE - confirm the true SAS position in the field.
+station_id,network,operator,name,city,division,lat,lon,monitor_type,coord_precision,source_url,notes
+SAS-1,DOE SAS Aria,Department of Environment,Farmgate SAS Aria,Dhaka,Dhaka,23.759410,90.388679,super-site,derived,https://doe.portal.gov.bd,"Co-located with CAMS-2 Farmgate; urban calibration reference for pair P1"
+SAS-2,DOE SAS Aria,Department of Environment,TV Centre Khulshi SAS Aria,Chattogram,Chattogram,22.360487,91.800454,super-site,derived,https://doe.portal.gov.bd,"Co-located with CAMS-6 TV Station Khulshi; urban calibration reference for pair P2"
+SAS-3,DOE SAS Aria,Department of Environment,Sapura Rajshahi SAS Aria,Rajshahi,Rajshahi,24.383320,88.608007,super-site,derived,https://doe.portal.gov.bd,"Co-located with CAMS-9 Sapura; urban calibration reference for pair P3"
+SAS-4,DOE SAS Aria,Department of Environment,Boyra Khulna SAS Aria,Khulna,Khulna,22.835775,89.529056,super-site,derived,https://doe.portal.gov.bd,"Co-located with CAMS-8 Boyra; urban calibration reference for pair P4"
+SAS-5,DOE SAS Aria,Department of Environment,Red Crescent Campus Sylhet SAS Aria,Sylhet,Sylhet,24.888334,91.867347,super-site,derived,https://doe.portal.gov.bd,"Co-located with CAMS-10 Red Crescent Campus; urban calibration reference for pair P5"
+SAS-6,DOE SAS Aria,Department of Environment,DoE Divisional HQ Mymensingh SAS Aria,Mymensingh,Mymensingh,24.762458,90.402102,super-site,derived,https://doe.portal.gov.bd,"Co-located with CAMS-12 DoE Office Divisional HQ; urban calibration reference for pair P6"
+SAS-7,DOE SAS Aria,Department of Environment,BTV Rangpur SAS Aria,Rangpur,Rangpur,25.747371,89.228931,super-site,derived,https://doe.portal.gov.bd,"Co-located with CAMS-13 BTV Rangpur Station; urban calibration reference for pair P7"
+SAS-8,DOE SAS Aria,Department of Environment,Bhola rural SAS Aria,Bhola,Barishal,22.6854999,90.6439447,super-site,approx,https://doe.portal.gov.bd,"Existing rural SAS Aria; position approximated from the paired rural anchor (Kalinath Bazar GPS) - exact SAS coordinates not in source doc"
+SAS-9,DOE SAS Aria,Department of Environment,Munshiganj rural SAS Aria,Munshiganj,Dhaka,23.5484511,90.5296905,super-site,approx,https://doe.portal.gov.bd,"Existing rural SAS Aria; position approximated from the paired rural anchor (Munshiganj GPS) - exact SAS coordinates not in source doc"
+SAS-10,DOE SAS Aria,Department of Environment,Dinajpur rural SAS Aria (near HSTU),Dinajpur,Rangpur,25.6229208,88.6507021,super-site,approx,https://doe.portal.gov.bd,"Existing rural SAS Aria near Hajee Mohammad Danish S&T University; position approximated from the paired rural anchor - exact SAS coordinates not in source doc"

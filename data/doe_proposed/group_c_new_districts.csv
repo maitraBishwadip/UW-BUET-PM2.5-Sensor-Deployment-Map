@@ -1,0 +1,22 @@
+# Group C - districts with NO existing CAMS / C-CAMS / SAS to anchor to. 18 units.
+# Each unit is proposed at a verified government school compound (secure, accessible,
+# roughly representative of the district town).
+id,doe_group,pair_id,role,name,area_type,division,district,lat,lon,associated_station,school,status,coord_precision,notes
+DP-C01,C,,new_district,Panchagarh urban site,urban,Rangpur,Panchagarh,26.3211725,88.5640669,none - no existing station in district,Ahmadnagar Government Primary School,proposed,approx,""
+DP-C02,C,,new_district,Panchagarh rural site,rural,Rangpur,Panchagarh,26.3419314,88.5540295,none - no existing station in district,"Collectorate School, Panchagarh",proposed,approx,"Primary-level status unverified - confirm grade level"
+DP-C03,C,,new_district,Kurigram site,urban,Rangpur,Kurigram,25.7846744,89.6049878,none - no existing station in district,Chilapara Government Primary School,proposed,approx,"Generic school name - worth a field-team sanity check"
+DP-C04,C,,new_district,Jamalpur site,urban,Mymensingh,Jamalpur,24.8983666,89.9708047,none - no existing station in district,Nasirpur Government Primary School,proposed,approx,"Same-named schools exist elsewhere in BD - this one confirmed near Jamalpur Sadar"
+DP-C05,C,,new_district,Moulvibazar site,urban,Sylhet,Moulvibazar,24.4898044,91.7675424,none - no existing station in district,Moulvibazar Model Government Primary School,proposed,approx,""
+DP-C06,C,,new_district,Manikganj site,urban,Dhaka,Manikganj,23.8616637,89.9979568,none - no existing station in district,Manikganj Government Primary School,proposed,approx,""
+DP-C07,C,,new_district,Pabna site,urban,Rajshahi,Pabna,24.0210339,89.2445478,none - no existing station in district,Singa Government Primary School,proposed,approx,""
+DP-C08,C,,new_district,Chuadanga site,urban,Khulna,Chuadanga,23.6724848,88.8538897,none - no existing station in district,Hazrahati Government Primary School,proposed,approx,""
+DP-C09,C,,new_district,Pirojpur site,urban,Barishal,Pirojpur,22.5775897,89.9689549,none - no existing station in district,Pirojpur Town School,proposed,approx,"Listed as Firozpur in source doc - assumed Pirojpur district; verify"
+DP-C10,C,,new_district,Kushtia site,urban,Khulna,Kushtia,23.9119877,89.1286591,none - no existing station in district,"Government Primary School, Chand Mohammad Rd",proposed,approx,"Generic name - confirm identity in field"
+DP-C11,C,,new_district,Shariatpur site,urban,Dhaka,Shariatpur,23.2200349,90.3558067,none - no existing station in district,Palong Government Primary School,proposed,approx,""
+DP-C12,C,,new_district,Joypurhat site,urban,Rajshahi,Joypurhat,25.1004629,89.0323562,none - no existing station in district,Joypurhat Model Government Primary School,proposed,approx,""
+DP-C13,C,,new_district,Thakurgaon site,urban,Rangpur,Thakurgaon,26.021082,88.4656103,none - no existing station in district,Border Guard Government Primary and High School,proposed,approx,""
+DP-C14,C,,new_district,Bandarban site (Hill Tract),urban,Chattogram,Bandarban,22.1966818,92.2212093,none - no existing station in district,Bandarban Model Government Primary School,proposed,approx,"Chittagong Hill Tracts"
+DP-C15,C,,new_district,Rangamati site (Hill Tract),urban,Chattogram,Rangamati,22.6509953,92.1960114,none - no existing station in district,New Rangamati Government Primary School,proposed,approx,"Chittagong Hill Tracts"
+DP-C16,C,,new_district,Habiganj site,urban,Sylhet,Habiganj,24.3853787,91.4121332,none - no existing station in district,Habiganj Government Primary School,proposed,approx,""
+DP-C17,C,,new_district,Chapainawabganj site,urban,Rajshahi,Chapainawabganj,24.5964268,88.2729404,none - no existing station in district,Nawabganj Model Government Primary School,proposed,approx,""
+DP-C18,C,,new_district,Kishoreganj site,urban,Dhaka,Kishoreganj,24.432576,90.7694692,none - no existing station in district,Nogua Government Primary School,proposed,approx,""

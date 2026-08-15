@@ -1,0 +1,12 @@
+# DoE PurpleAir (PA-II-SD) low-cost network - one row per physical monitor.
+#
+# AWAITING DATA: paste the DoE PurpleAir deployment list below the header and rerun
+#   python scripts/build_map.py
+# Until then this file is header-only and contributes nothing to the map. The single
+# representative PurpleAir point currently in third_party.csv (PA-01) should be deleted
+# once the real per-monitor rows land here.
+#
+# network must be exactly "DoE PurpleAir" so the build routes it to the PurpleAir layer.
+# Leave lat/lon empty for a monitor whose position is not yet confirmed - the row is then
+# listed in the map's "awaiting siting" panel instead of being silently dropped.
+station_id,network,operator,name,city,division,lat,lon,monitor_type,coord_precision,source_url,notes

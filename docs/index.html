@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bangladesh PM2.5 Sensor Deployment Map</title>
-  <meta name="description" content="Interactive map of PM2.5 air-quality sensor deployments across Bangladesh — DoE CAMS/C-CAMS, third-party networks, and the UW–BUET 55-sensor low-cost network." />
+  <meta name="description" content="Interactive map of PM2.5 air-quality sensor deployments across Bangladesh — DoE CAMS/C-CAMS, Super SAS Aria stations, the DoE proposed 55-unit low-cost plan, third-party networks, and the UW–BUET low-cost network." />
   <link rel="stylesheet" href="assets/vendor/leaflet.css" />
   <link rel="stylesheet" href="assets/vendor/MarkerCluster.css" />
   <link rel="stylesheet" href="assets/vendor/MarkerCluster.Default.css" />
@@ -17,7 +17,7 @@
         <button id="side-toggle" class="side-toggle" aria-label="Collapse sidebar" title="Collapse / expand">‹</button>
         <div class="side-title">
           <h1>Bangladesh PM<sub>2.5</sub> Deployments</h1>
-          <p class="subtitle">DoE network · third-party monitors · UW–BUET low-cost network</p>
+          <p class="subtitle">DoE reference network · Super SAS · DoE proposed 55 · third-party · UW–BUET</p>
         </div>
       </header>
 
@@ -38,6 +38,7 @@
           <h2 class="panel-h">Status</h2>
           <div class="seg" id="status-filter" role="tablist">
             <button class="seg-btn is-on" data-status="all">All</button>
+            <button class="seg-btn" data-status="proposed">Proposed</button>
             <button class="seg-btn" data-status="planned">Planned</button>
             <button class="seg-btn" data-status="installed">Installed</button>
           </div>
@@ -45,7 +46,23 @@
 
         <section class="panel">
           <div class="panel-h-row">
-            <h2 class="panel-h">My deployments</h2>
+            <h2 class="panel-h">DoE proposed deployments</h2>
+            <button class="mini-toggle" data-group="doe_proposed">hide all</button>
+          </div>
+          <div class="layer-list" id="layers-doe_proposed"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-h-row">
+            <h2 class="panel-h">Super SAS deployments (DoE)</h2>
+            <button class="mini-toggle" data-group="sas">hide all</button>
+          </div>
+          <div class="layer-list" id="layers-sas"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-h-row">
+            <h2 class="panel-h">UW–BUET deployments</h2>
             <button class="mini-toggle" data-group="mine">hide all</button>
           </div>
           <div class="layer-list" id="layers-mine"></div>
@@ -57,10 +74,28 @@
             <button class="mini-toggle" data-group="existing">hide all</button>
           </div>
           <div class="layer-list" id="layers-existing"></div>
+          <p class="legend-note">
+            Every deployment is a <strong>map-pin</strong>; colour identifies the layer and the glyph in
+            the pin head identifies the family — <span class="gk">◎</span> reference grade,
+            <span class="gk">+</span> DoE proposed, <span class="gk">◆</span> UW–BUET,
+            <span class="gk">●</span> low-cost. Super SAS sites are <strong style="color:#d62828">red stars ★</strong>.
+            A solid gradient pin is installed; a pale pin is proposed or planned.
+          </p>
+        </section>
+
+        <section class="panel" id="pending-panel" hidden>
+          <div class="panel-h-row">
+            <h2 class="panel-h">Awaiting siting <span id="pending-count" class="lr-count"></span></h2>
+          </div>
+          <p class="legend-note" style="margin-top:0">
+            Named in the source documents but with no coordinates yet, so they are not on the map.
+          </p>
+          <ul class="pending-list" id="pending-list"></ul>
         </section>
 
         <section class="panel">
           <h2 class="panel-h">Options</h2>
+          <label class="opt"><input type="checkbox" id="opt-spread" checked /> Fan out co-located sites</label>
           <label class="opt"><input type="checkbox" id="opt-cluster" /> Cluster dense markers</label>
           <label class="opt"><input type="checkbox" id="opt-divlabels" checked /> Division shading &amp; counts</label>
           <label class="opt"><input type="checkbox" id="opt-theme" /> Dark mode</label>

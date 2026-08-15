@@ -1,0 +1,11 @@
+# Group B - districts where the EXISTING SAS Aria unit already sits in a rural area.
+# The proposal adds an urban counterpart in the same district. 3 pairs = 6 units.
+# The three urban rows have no coordinates in the source doc (no DoE CAMS/C-CAMS in those towns
+# to anchor to); they are left empty on purpose and surface in the "awaiting siting" panel.
+id,doe_group,pair_id,role,name,area_type,division,district,lat,lon,associated_station,school,status,coord_precision,notes
+DP-B01,B,P8,sas_colocated,Bhola rural site (SAS Aria colocation),rural,Barishal,Bhola,22.6854999,90.6439447,SAS Aria (existing rural Bhola),Kalinath Bazar Government Primary School,proposed,approx,"Rural calibration reference for the Bhola urban unit"
+DP-B02,B,P8,new_urban,Bhola town urban site,urban,Barishal,Bhola,,,No existing DoE CAMS/C-CAMS confirmed in Bhola town,,proposed,,"New site - coordinates pending field siting"
+DP-B03,B,P9,sas_colocated,Munshiganj rural site (SAS Aria colocation),rural,Dhaka,Munshiganj,23.5484511,90.5296905,SAS Aria (existing rural Munshiganj),Munshiganj Government Primary School,proposed,approx,"Rural calibration reference for the Munshiganj urban unit"
+DP-B04,B,P9,new_urban,Munshiganj town urban site,urban,Dhaka,Munshiganj,,,No existing DoE CAMS/C-CAMS confirmed in Munshiganj town,,proposed,,"New site - coordinates pending field siting"
+DP-B05,B,P10,sas_colocated,Dinajpur rural site near HSTU (SAS Aria colocation),rural,Rangpur,Dinajpur,25.6229208,88.6507021,SAS Aria (existing rural Dinajpur),"Govt. Primary School, Bypass Rd, Shekhpur",proposed,approx,"Near Hajee Mohammad Danish Science & Technology University"
+DP-B06,B,P10,new_urban,Dinajpur town urban site,urban,Rangpur,Dinajpur,,,No existing DoE CAMS/C-CAMS confirmed in Dinajpur town,,proposed,,"New site - coordinates pending field siting"

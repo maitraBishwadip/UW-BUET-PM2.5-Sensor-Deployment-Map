@@ -1,0 +1,7 @@
+# Districts named in the DoE table but left BLANK for area type and quantity.
+# status=pending keeps them out of the 55-unit count; they carry no coordinates, so they
+# appear only in the map's "awaiting siting" panel. Fill in role/area_type/lat/lon and flip
+# status to "proposed" once the DoE confirms them.
+id,doe_group,pair_id,role,name,area_type,division,district,lat,lon,associated_station,school,status,coord_precision,notes
+DP-X01,A.2,,unspecified,Patuakhali,,Barishal,Patuakhali,,,listed under DoE Existing CAMS section,,pending,,"Type and quantity not specified in source doc"
+DP-X02,C,,unspecified,Sunamganj,,Sylhet,Sunamganj,,,listed under districts with no CAMS,,pending,,"Type and quantity not specified in source doc"

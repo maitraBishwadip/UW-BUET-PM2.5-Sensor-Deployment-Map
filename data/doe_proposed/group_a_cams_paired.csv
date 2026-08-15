@@ -1,0 +1,38 @@
+# Group A - DoE proposed low-cost units paired with EXISTING DoE CAMS / C-CAMS stations.
+# 31 units = 7 urban CAMS+SAS colocations + 7 rural counterparts (A.1, 7 pairs)
+#            + 16 single rural sites + 1 urban-only site (Satkhira)  (A.2, 17 rows)
+# Source: DoE "Proposed Monitoring Locations v2" table.
+# Urban CAMS+SAS rows carry no coordinates in the source doc; lat/lon here are taken
+# from the associated CAMS station in data/existing/doe_cams.csv (coord_precision=derived).
+id,doe_group,pair_id,role,name,area_type,division,district,lat,lon,associated_station,school,status,coord_precision,notes
+DP-A01,A.1,P1,cams_colocated,Farmgate CAMS+SAS (calibration reference),urban,Dhaka,Dhaka,23.759410,90.388679,CAMS-2 Farmgate + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Keraniganj rural unit"
+DP-A02,A.1,P2,cams_colocated,TV Centre Khulshi CAMS+SAS (calibration reference),urban,Chattogram,Chattogram,22.360487,91.800454,CAMS-6 TV Station Khulshi + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Chattogram rural unit"
+DP-A03,A.1,P3,cams_colocated,Sapura Rajshahi CAMS+SAS (calibration reference),urban,Rajshahi,Rajshahi,24.383320,88.608007,CAMS-9 Sapura + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Rajshahi rural unit"
+DP-A04,A.1,P4,cams_colocated,Boyra Khulna CAMS+SAS (calibration reference),urban,Khulna,Khulna,22.835775,89.529056,CAMS-8 Boyra + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Khulna rural unit"
+DP-A05,A.1,P5,cams_colocated,Red Crescent Campus Sylhet CAMS+SAS (calibration reference),urban,Sylhet,Sylhet,24.888334,91.867347,CAMS-10 Red Crescent Campus + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Sylhet rural unit"
+DP-A06,A.1,P6,cams_colocated,DoE Divisional HQ Mymensingh CAMS+SAS (calibration reference),urban,Mymensingh,Mymensingh,24.762458,90.402102,CAMS-12 DoE Office Divisional HQ + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Mymensingh rural unit"
+DP-A07,A.1,P7,cams_colocated,BTV Rangpur CAMS+SAS (calibration reference),urban,Rangpur,Rangpur,25.747371,89.228931,CAMS-13 BTV Rangpur Station + SAS Aria,,proposed,derived,"Existing CAMS+SAS; urban calibration reference for the Rangpur rural unit"
+DP-A08,A.1,P1,new_rural,Keraniganj rural site,rural,Dhaka,Dhaka,23.6952739,90.4102807,Calibrated vs CAMS-2 Farmgate + SAS,Khejurbag Government Primary School,proposed,approx,"Rural counterpart of pair P1"
+DP-A09,A.1,P2,new_rural,Chattogram rural site,rural,Chattogram,Chattogram,22.3645883,91.8351576,Calibrated vs CAMS-6 TV Centre + SAS,Ahmed Mia Government Primary School,proposed,approx,"School is still city-area - true rural periphery site TBD by field team"
+DP-A10,A.1,P3,new_rural,Rajshahi rural site,rural,Rajshahi,Rajshahi,24.3771875,88.5530781,Calibrated vs CAMS-9 Sapura + SAS,Raypara Government Primary School,proposed,approx,"Rural counterpart of pair P3"
+DP-A11,A.1,P4,new_rural,Khulna rural site,rural,Khulna,Khulna,22.8720426,89.5099489,Calibrated vs CAMS-8 Boyra + SAS,Gaikur Government Primary School,proposed,approx,"Rural counterpart of pair P4"
+DP-A12,A.1,P5,new_rural,Sylhet rural site,rural,Sylhet,Sylhet,24.8928278,91.8693901,Calibrated vs CAMS-10 Red Crescent + SAS,Government Kindergarten Elementary School,proposed,approx,"Nearest identifiable school is fairly central - verify a more rural option in the field"
+DP-A13,A.1,P6,new_rural,Mymensingh rural site,rural,Mymensingh,Mymensingh,24.758065,90.3932233,Calibrated vs CAMS-12 DoE Divisional HQ + SAS,Sanki Para Government Primary School,proposed,approx,"Rural counterpart of pair P6"
+DP-A14,A.1,P7,new_rural,Rangpur rural site,rural,Rangpur,Rangpur,25.7410464,89.2589524,Calibrated vs CAMS-13 BTV Rangpur + SAS,Nurpur Government Primary School,proposed,approx,"Rural counterpart of pair P7"
+DP-A15,A.2,,new_rural,Purbachal New Town,rural,Dhaka,Narayanganj,23.860164,90.479471,Nearest reference: Dhaka cluster CAMS,Borkaw Government Primary School,proposed,approx,"Exact site not named in source doc beyond Purbachal; Rupganj upazila"
+DP-A16,A.2,,new_rural,Narsingdi rural site,rural,Dhaka,Narsingdi,23.913007,90.7136783,CAMS-15 Sadar Upazila Complex,Brahman Para Government Primary School,proposed,approx,""
+DP-A17,A.2,,new_rural,Narayanganj rural site,rural,Dhaka,Narayanganj,23.621699,90.5031284,CAMS-5 Narayanganj (Urban/Industry),Adarsha Shishu Government Primary School,proposed,approx,""
+DP-A18,A.2,,new_rural,Gazipur rural site,rural,Dhaka,Gazipur,24.0527941,90.4376031,CAMS-4 Gazipur,Gazipur Government Primary School,proposed,approx,""
+DP-A19,A.2,,new_rural,Barishal rural periphery,rural,Barishal,Barishal,22.6606957,90.3381833,CAMS-11 DFO Office Campus,"Primary School, Gas Turbine Rd",proposed,approx,"Source doc gives qty 1 only - no SAS split"
+DP-A20,A.2,,new_rural,Cumilla rural site,rural,Chattogram,Cumilla,23.459213,91.1761178,CAMS-16 Court Area Cumilla,Comilla Modern School,proposed,approx,""
+DP-A21,A.2,,new_rural,Faridpur rural site,rural,Dhaka,Faridpur,23.6120427,89.856359,C-CAMS-17 Sadar Faridpur,Tapakhola Government Primary School,proposed,approx,""
+DP-A22,A.2,,new_rural,Jashore rural site,rural,Khulna,Jashore,23.1645352,89.2101065,C-CAMS-18 Sadar Jashore,Jessore Institute Government Primary School,proposed,approx,""
+DP-A23,A.2,,new_urban,Satkhira urban site,urban,Khulna,Satkhira,,,C-CAMS-19 Shyamnagar Satkhira,,proposed,,"Source doc flips Rural to Urban here; urban site so no school search applicable - coordinates pending field siting"
+DP-A24,A.2,,new_rural,Bagerhat rural site,rural,Khulna,Bagerhat,22.6838758,89.7439443,C-CAMS-20 Rampal Bagerhat (Rural/Industrial),Mogra Government Primary School,proposed,approx,""
+DP-A25,A.2,,new_rural,Gopalganj rural site,rural,Dhaka,Gopalganj,23.0046676,89.8287424,C-CAMS-21 Sadar Gopalganj,S.M. Model Government Primary School,proposed,approx,""
+DP-A26,A.2,,new_rural,Tangail rural site,rural,Dhaka,Tangail,24.2513773,89.9131308,C-CAMS-22 Sadar Tangail,Model Government Primary School,proposed,approx,""
+DP-A27,A.2,,new_rural,Bogura rural site,rural,Rajshahi,Bogura,24.8890587,89.3507293,C-CAMS-23 Sadar Bogura,Baropur Government Primary School,proposed,approx,""
+DP-A28,A.2,,new_rural,Brahmanbaria rural site,rural,Chattogram,Brahmanbaria,23.9678064,91.1058531,C-CAMS-26 Sadar Brahmanbaria,District Primary Education Office (landmark only),proposed,approx,"No verified rural primary school nearby - flagged for field verification"
+DP-A29,A.2,,new_rural,Feni rural site,rural,Chattogram,Feni,23.0072372,91.4015049,C-CAMS-27 Sadar Feni,Feni Model Government Primary School,proposed,approx,""
+DP-A30,A.2,,new_rural,Noakhali rural site,rural,Chattogram,Noakhali,22.8790855,91.0934371,C-CAMS-28 Maijdi Bazar Noakhali,Maijdi Government Primary School,proposed,approx,""
+DP-A31,A.2,,new_rural,Cox's Bazar rural site,rural,Chattogram,Cox's Bazar,21.444076,91.985697,C-CAMS-30 Saymon Road Sadar Cox's Bazar,Tech Para Government Primary School,proposed,approx,""

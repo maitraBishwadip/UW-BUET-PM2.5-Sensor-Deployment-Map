@@ -2,31 +2,46 @@
  * Reads docs/data/{deployments.geojson, divisions.json, summary.json} produced by
  * scripts/build_map.py and renders an interactive Leaflet map. No hardcoded station
  * counts — everything is derived from the data at load time.
+ *
+ * Marker language: every deployment is a map pin. Colour = layer, glyph in the pin head
+ * = family (reference / DoE-proposed / UW-BUET / low-cost). Super SAS sites are red stars.
+ * Stations sharing one physical site are fanned out on a ring so none is hidden.
  */
 "use strict";
 
 const REPO_URL = "https://github.com/maitraBishwadip/UW-BUET-PM2.5-Sensor-Deployment-Map";
 
-/* Layer catalogue: shape encodes owner/type, colour encodes category.
- * order controls legend order. group ties a layer to a section + summary tally. */
+/* Layer catalogue.
+ * section -> sidebar block + summary tally; family -> pin glyph; color -> pin gradient. */
 const LAYERS = {
-  // --- my deployments ---
-  doe_colocation:     { label: "DoE colocation (Block A)", group: "mine", shape: "square",   color: "#2a78d6", order: 1 },
-  border:             { label: "Border area (Block B)",     group: "mine", shape: "square",   color: "#e34948", order: 2 },
-  ambient_semi_urban: { label: "Ambient · semi-urban",      group: "mine", shape: "diamond",  color: "#eb6834", order: 3 },
-  ambient_village:    { label: "Ambient · village/rural",   group: "mine", shape: "diamond",  color: "#008300", order: 4 },
-  pollution_hotspot:  { label: "Pollution source / hotspot",group: "mine", shape: "diamond",  color: "#111111", order: 5 },
-  // --- existing networks ---
-  doe_cams:           { label: "DoE CAMS (reference)",      group: "existing", shape: "star5",    color: "#eda100", order: 10 },
-  doe_ccams:          { label: "DoE C-CAMS (reference)",    group: "existing", shape: "star4",    color: "#4a3aa7", order: 11 },
-  us_embassy:         { label: "US Embassy (BAM ref.)",     group: "existing", shape: "triangle", color: "#256abf", order: 12 },
-  spartan:            { label: "SPARTAN (filter ref.)",     group: "existing", shape: "pentagon", color: "#8a5a2b", order: 13 },
-  gaia:               { label: "GAIA / aqicn (low-cost)",   group: "existing", shape: "circle",   color: "#1baf7a", order: 14 },
-  purpleair:          { label: "PurpleAir (low-cost)",      group: "existing", shape: "circle",   color: "#7c4dff", order: 15 },
-  iqair:              { label: "IQAir (low-cost)",          group: "existing", shape: "circle",   color: "#e87ba4", order: 16 },
-  community:          { label: "aqicn community (low-cost)",group: "existing", shape: "circle",   color: "#6f6f6f", order: 17 },
-  other:              { label: "Other",                     group: "existing", shape: "circle",   color: "#898781", order: 18 },
+  // --- DoE proposed 55-unit plan (plus glyph) ---
+  doe_prop_cams:        { label: "Co-located w/ existing CAMS+SAS", section: "doe_proposed", family: "prop", color: "#0b3d91", order: 1 },
+  doe_prop_sas:         { label: "Co-located w/ rural SAS Aria",    section: "doe_proposed", family: "prop", color: "#00838f", order: 2 },
+  doe_prop_rural:       { label: "New rural deployment",            section: "doe_proposed", family: "prop", color: "#3f9142", order: 3 },
+  doe_prop_urban:       { label: "New urban deployment",            section: "doe_proposed", family: "prop", color: "#7b3fa0", order: 4 },
+  doe_prop_district:    { label: "New district (no existing CAMS)", section: "doe_proposed", family: "prop", color: "#c2185b", order: 5 },
+  doe_prop_unspecified: { label: "Unspecified in DoE table",        section: "doe_proposed", family: "prop", color: "#9e9e9e", order: 6, hideIfEmpty: true },
+  // --- Super SAS (red star) ---
+  doe_sas:            { label: "SAS Aria super-site",         section: "sas",      family: "sas",     color: "#d62828", order: 20 },
+  // --- UW-BUET network (diamond glyph) ---
+  doe_colocation:     { label: "DoE colocation (Block A)",    section: "mine",     family: "mine",    color: "#1f6feb", order: 30 },
+  border:             { label: "Border area (Block B)",       section: "mine",     family: "mine",    color: "#e4572e", order: 31 },
+  ambient_semi_urban: { label: "Ambient · semi-urban",        section: "mine",     family: "mine",    color: "#f2a65a", order: 32 },
+  ambient_village:    { label: "Ambient · village/rural",     section: "mine",     family: "mine",    color: "#17a398", order: 33 },
+  pollution_hotspot:  { label: "Pollution source / hotspot",  section: "mine",     family: "mine",    color: "#2b2b2b", order: 34 },
+  // --- existing networks (bullseye = reference grade, dot = low-cost) ---
+  doe_cams:           { label: "DoE CAMS (reference)",        section: "existing", family: "ref",     color: "#e8a33d", order: 40 },
+  doe_ccams:          { label: "DoE C-CAMS (reference)",      section: "existing", family: "ref",     color: "#8d6e29", order: 41 },
+  us_embassy:         { label: "US Embassy (BAM ref.)",       section: "existing", family: "ref",     color: "#2e4a7d", order: 42 },
+  spartan:            { label: "SPARTAN (filter ref.)",       section: "existing", family: "ref",     color: "#795548", order: 43 },
+  purpleair:          { label: "PurpleAir (low-cost)",        section: "existing", family: "lowcost", color: "#7c4dff", order: 44 },
+  gaia:               { label: "GAIA / aqicn (low-cost)",     section: "existing", family: "lowcost", color: "#b07aa1", order: 45 },
+  iqair:              { label: "IQAir (low-cost)",            section: "existing", family: "lowcost", color: "#e87ba4", order: 46 },
+  community:          { label: "aqicn community (low-cost)",  section: "existing", family: "lowcost", color: "#78909c", order: 47 },
+  other:              { label: "Other",                       section: "existing", family: "lowcost", color: "#9e9e9e", order: 48, hideIfEmpty: true },
 };
+
+const SECTIONS = ["doe_proposed", "sas", "mine", "existing"];
 
 // bd.json uses older division spellings; map them to the report spellings.
 const DIV_ALIAS = { "Barisal": "Barishal", "Chittagong": "Chattogram" };
@@ -38,36 +53,49 @@ const BASEMAPS = {
   esri:      { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", attribution: "Tiles &copy; Esri", maxZoom: 19 },
 };
 
-/* ---------- SVG marker factory ---------- */
-function shapeSVG(shape, color, filled, size) {
-  const s = size, c = s / 2, r = s / 2 - 2;
-  const fill = filled ? color : "var(--surface-1, #fff)";
-  const sw = filled ? 1.5 : 2.4;
-  const dash = "";
-  let inner;
-  switch (shape) {
-    case "circle":
-      inner = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fill}" stroke="${color}" stroke-width="${sw}"/>`; break;
-    case "square": {
-      const p = 3;
-      inner = `<rect x="${p}" y="${p}" width="${s - 2 * p}" height="${s - 2 * p}" rx="2.5" fill="${fill}" stroke="${color}" stroke-width="${sw}"/>`; break;
-    }
-    case "diamond":
-      inner = `<polygon points="${c},2 ${s - 2},${c} ${c},${s - 2} 2,${c}" fill="${fill}" stroke="${color}" stroke-width="${sw}" stroke-linejoin="round"/>`; break;
-    case "triangle":
-      inner = `<polygon points="${c},2.5 ${s - 2},${s - 3} 2,${s - 3}" fill="${fill}" stroke="${color}" stroke-width="${sw}" stroke-linejoin="round"/>`; break;
-    case "pentagon": {
-      inner = `<polygon points="${starPts(c, c, r, r, 5, -Math.PI / 2)}" fill="${fill}" stroke="${color}" stroke-width="${sw}" stroke-linejoin="round"/>`; break;
-    }
-    case "star5":
-      inner = `<polygon points="${starPts(c, c, r, r * 0.45, 5, -Math.PI / 2)}" fill="${fill}" stroke="${color}" stroke-width="${sw}" stroke-linejoin="round"/>`; break;
-    case "star4":
-      inner = `<polygon points="${starPts(c, c, r, r * 0.4, 4, -Math.PI / 2)}" fill="${fill}" stroke="${color}" stroke-width="${sw}" stroke-linejoin="round"/>`; break;
-    default:
-      inner = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fill}" stroke="${color}" stroke-width="${sw}"/>`;
-  }
-  return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+/* ---------- colour helpers ---------- */
+function mixWhite(hex, t) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const m = v => Math.round(v + (255 - v) * t);
+  return `#${((1 << 24) | (m(r) << 16) | (m(g) << 8) | m(b)).toString(16).slice(1)}`;
 }
+
+/* ---------- SVG marker factory ---------- */
+// Teardrop pin drawn in a 24 x 32 box: head centred at (12, 11.4), tip at (12, 31).
+const PIN_PATH = "M12 0.9C6.2 0.9 1.5 5.6 1.5 11.4c0 7.9 10.5 19.7 10.5 19.7s10.5-11.8 10.5-19.7C22.5 5.6 17.8 0.9 12 0.9z";
+
+function glyphSVG(family, color, filled) {
+  const c = filled ? "#ffffff" : color;
+  switch (family) {
+    case "ref": // reference grade -> bullseye
+      return `<circle cx="12" cy="11.4" r="4.5" fill="none" stroke="${c}" stroke-width="1.6"/>
+              <circle cx="12" cy="11.4" r="1.9" fill="${c}"/>`;
+    case "prop": // DoE proposed -> plus
+      return `<path d="M12 6.8v9.2M7.4 11.4h9.2" stroke="${c}" stroke-width="2.1" stroke-linecap="round"/>`;
+    case "mine": // UW-BUET -> diamond
+      return `<polygon points="12,6.5 16.9,11.4 12,16.3 7.1,11.4" fill="${c}"/>`;
+    default: // low-cost -> dot
+      return `<circle cx="12" cy="11.4" r="3.4" fill="${c}"/>`;
+  }
+}
+
+function pinSVG(color, family, filled, size) {
+  const w = size, h = Math.round(size * 32 / 24);
+  const gid = `pg${color.slice(1)}${filled ? 1 : 0}`;
+  const fill = filled ? `url(#${gid})` : mixWhite(color, 0.82);
+  const defs = filled
+    ? `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+         <stop offset="0" stop-color="${mixWhite(color, 0.42)}"/>
+         <stop offset="1" stop-color="${color}"/></linearGradient></defs>`
+    : "";
+  return `<svg width="${w}" height="${h}" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+    ${defs}
+    <path d="${PIN_PATH}" fill="${fill}" stroke="${color}" stroke-width="${filled ? 1.1 : 1.9}"/>
+    ${glyphSVG(family, color, filled)}
+  </svg>`;
+}
+
 function starPts(cx, cy, outer, inner, points, rot) {
   const pts = [];
   for (let i = 0; i < points * 2; i++) {
@@ -77,38 +105,48 @@ function starPts(cx, cy, outer, inner, points, rot) {
   }
   return pts.join(" ");
 }
-function polyPts(cx, cy, r, n, rot) {
-  const pts = [];
-  for (let i = 0; i < n; i++) {
-    const a = rot + (2 * Math.PI * i) / n;
-    pts.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`);
-  }
-  return pts.join(" ");
-}
-// pentagon uses polyPts via starPts fallback fix:
-function pentagon(cx, cy, r) { return polyPts(cx, cy, r, 5, -Math.PI / 2); }
 
-function makeIcon(layerKey, status, size = 22) {
+function starSVG(color, filled, size) {
+  const c = size / 2, r = size / 2 - 1.5;
+  const gid = `sg${color.slice(1)}${filled ? 1 : 0}`;
+  const fill = filled ? `url(#${gid})` : mixWhite(color, 0.82);
+  const defs = filled
+    ? `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+         <stop offset="0" stop-color="${mixWhite(color, 0.4)}"/>
+         <stop offset="1" stop-color="${color}"/></linearGradient></defs>`
+    : "";
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+    ${defs}
+    <polygon points="${starPts(c, c, r, r * 0.44, 5, -Math.PI / 2)}"
+             fill="${fill}" stroke="${color}" stroke-width="1.3" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function markerSVG(layerKey, filled, size) {
+  const L2 = LAYERS[layerKey] || LAYERS.other;
+  return L2.family === "sas"
+    ? starSVG(L2.color, filled, size)
+    : pinSVG(L2.color, L2.family, filled, size);
+}
+
+function makeIcon(layerKey, status, size = 26) {
   const L2 = LAYERS[layerKey] || LAYERS.other;
   const filled = status === "installed";
-  let svg;
-  if (L2.shape === "pentagon") {
-    const s = size, c = s / 2, r = s / 2 - 2;
-    const fill = filled ? L2.color : "var(--surface-1,#fff)";
-    const sw = filled ? 1.5 : 2.4;
-    svg = `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg"><polygon points="${pentagon(c, c, r)}" fill="${fill}" stroke="${L2.color}" stroke-width="${sw}" stroke-linejoin="round"/></svg>`;
-  } else {
-    svg = shapeSVG(L2.shape, L2.color, filled, size);
+  const svg = markerSVG(layerKey, filled, size);
+  if (L2.family === "sas") {
+    return L.divIcon({ className: "pin", html: svg, iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2 + 2] });
   }
-  return L.divIcon({ className: "pin", html: svg, iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2 + 2] });
+  const h = Math.round(size * 32 / 24);
+  return L.divIcon({ className: "pin", html: svg, iconSize: [size, h],
+    iconAnchor: [size / 2, h], popupAnchor: [0, -h + 4] });
 }
 
 /* ---------- state ---------- */
 const state = {
-  map: null, baseLayer: null, divisionLayer: null,
-  markersByLayer: {}, clusterByLayer: {}, useCluster: false,
+  map: null, baseLayer: null, divisionLayer: null, coloLayer: null,
+  markersByLayer: {}, clusterByLayer: {}, useCluster: false, spread: true,
   enabled: {}, statusFilter: "all", allFeatures: [], summary: null,
-  divCountEls: {},
 };
 
 /* ---------- load & init ---------- */
@@ -129,6 +167,7 @@ async function boot() {
   buildMarkers();
   buildLayerControls();
   buildStats();
+  buildPending();
   wireUI();
   applyHashView();
 }
@@ -138,8 +177,8 @@ function initMap() {
     .setView([23.8, 90.35], 7);
   setBasemap("carto");
   L.control.scale({ imperial: false, position: "bottomleft" }).addTo(state.map);
+  state.coloLayer = L.layerGroup().addTo(state.map);
 
-  // mouse coordinate readout
   const coordCtl = L.control({ position: "bottomright" });
   coordCtl.onAdd = () => {
     const d = L.DomUtil.create("div", "leaflet-bar");
@@ -153,6 +192,7 @@ function initMap() {
     if (el) el.textContent = `${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)}`;
   });
   state.map.on("moveend", writeHashView);
+  state.map.on("zoomend", applyColoSpread);
 }
 
 function setBasemap(key) {
@@ -201,20 +241,28 @@ function buildMarkers() {
     const p = f.properties;
     const key = LAYERS[p.layer] ? p.layer : "other";
     const [lng, lat] = f.geometry.coordinates;
-    const status = p.status || (p.group === "existing" ? "installed" : "planned");
+    const status = p.status || (p.group === "existing" || p.group === "sas" ? "installed" : "proposed");
     const m = L.marker([lat, lng], { icon: makeIcon(key, status), riseOnHover: true });
-    m.feature = f; m._layerKey = key; m._status = status;
-    m.bindTooltip(p.name || p.id, { className: "pin-tip", direction: "top", offset: [0, -6] });
-    m.bindPopup(() => popupHTML(p), { maxWidth: 300 });
+    m.feature = f; m._layerKey = key; m._status = status; m._trueLatLng = L.latLng(lat, lng);
+    m.bindTooltip(`${p.name || p.id} · ${(LAYERS[key] || LAYERS.other).label}`,
+      { className: "pin-tip", direction: "top", offset: [0, -8] });
+    m.bindPopup(() => popupHTML(p), { maxWidth: 320 });
     state.markersByLayer[key].push(m);
   });
   refreshMarkerDisplay();
 }
 
 function statusChip(status) {
-  const map = { installed: "#0ca30c", planned: "#eda100", proposed: "#898781" };
+  const map = { installed: "#0ca30c", planned: "#eda100", proposed: "#2a78d6", pending: "#898781" };
   const c = map[status] || "#898781";
   return `<span class="status-chip" style="color:${c};border-color:${c}">${status}</span>`;
+}
+
+function colocatedWith(p) {
+  if (!p.colo_id) return [];
+  return state.allFeatures
+    .filter(f => f.properties.colo_id === p.colo_id && f.properties.id !== p.id)
+    .map(f => f.properties);
 }
 
 function popupHTML(p) {
@@ -224,18 +272,38 @@ function popupHTML(p) {
   if (p.group === "mine") {
     add("Category", L2.label);
     add("Tier", p.tier);
-    add("Division", p.division);
-    add("District", p.district);
-    add("Status", statusChip(p.status));
-    add("Coords", p.coord_precision === "approx" ? "planning-stage (approx.)" : "confirmed");
+  } else if (p.group === "doe_proposed") {
+    add("Role", L2.label);
+    add("DoE group", p.doe_group + (p.pair_id ? ` · pair ${p.pair_id}` : ""));
+    add("Area type", p.area_type);
+    add("Reference", p.associated_station);
+    add("Host site", p.school);
   } else {
     add("Network", p.network);
     add("Operator", p.operator);
     add("Type", p.monitor_type);
     add("City", p.city);
-    add("Division", p.division);
   }
+  add("Division", p.division);
+  add("District", p.district);
+  if (p.status) add("Status", statusChip(p.status));
+  const prec = { approx: "planning-stage (approx.)", exact: "confirmed",
+                 derived: "derived from co-located station" }[p.coord_precision];
+  add("Coords", prec || p.coord_precision);
   add("Notes", p.notes);
+
+  const others = colocatedWith(p);
+  const coloBlock = others.length ? `
+    <div class="pop-colo">
+      <div class="pc-h">Same site — ${others.length + 1} stations</div>
+      ${others.map(o => {
+        const OL = LAYERS[o.layer] || LAYERS.other;
+        return `<div class="pc-row"><span class="pc-dot" style="background:${OL.color}"></span>
+          <span class="pc-name">${o.name || o.id}</span>
+          <span class="pc-lab">${OL.label}</span></div>`;
+      }).join("")}
+    </div>` : "";
+
   const ll = markerLatLng(p);
   const links = [];
   if (ll) links.push(`<a href="https://www.google.com/maps?q=${ll[0]},${ll[1]}" target="_blank" rel="noopener">Google Maps ↗</a>`);
@@ -244,11 +312,12 @@ function popupHTML(p) {
     <span class="pop-badge" style="background:${L2.color}">${p.id}</span>
     <h3>${p.name || p.id}</h3>
     <table>${rows.join("")}</table>
+    ${coloBlock}
     ${links.length ? `<div class="pop-links">${links.join("")}</div>` : ""}
   </div>`;
 }
+
 function markerLatLng(p) {
-  // find the marker's coordinates from the source feature
   const f = state.allFeatures.find(x => x.properties.id === p.id);
   if (!f) return null;
   const [lng, lat] = f.geometry.coordinates;
@@ -260,9 +329,17 @@ function passesStatus(status) {
   return status === state.statusFilter;
 }
 
+function visibleMarkers() {
+  const out = [];
+  Object.keys(LAYERS).forEach(key => {
+    if (!state.enabled[key]) return;
+    state.markersByLayer[key].forEach(m => { if (passesStatus(m._status)) out.push(m); });
+  });
+  return out;
+}
+
 function refreshMarkerDisplay() {
   Object.keys(LAYERS).forEach(key => {
-    // remove existing renderings
     if (state.clusterByLayer[key]) { state.map.removeLayer(state.clusterByLayer[key]); state.clusterByLayer[key] = null; }
     state.markersByLayer[key].forEach(m => state.map.removeLayer(m));
     if (!state.enabled[key]) return;
@@ -276,7 +353,51 @@ function refreshMarkerDisplay() {
       visible.forEach(m => m.addTo(state.map));
     }
   });
+  applyColoSpread();
   updateCountBadges();
+}
+
+/* ---------- co-located site fan-out ----------
+ * Several networks often share one compound (e.g. CAMS + SAS + GAIA + a proposed unit).
+ * Stacked pins hide each other, so spread the group on a small pixel-radius ring around
+ * the true site and draw leader lines back to it. Recomputed on zoom and on any filter
+ * change, because the ring size is in screen pixels, not degrees. */
+function applyColoSpread() {
+  state.coloLayer.clearLayers();
+  Object.keys(LAYERS).forEach(key =>
+    state.markersByLayer[key].forEach(m => {
+      if (!m.getLatLng().equals(m._trueLatLng)) m.setLatLng(m._trueLatLng);
+    }));
+  if (!state.spread || state.useCluster) return;
+
+  const groups = {};
+  visibleMarkers().forEach(m => {
+    const cid = m.feature.properties.colo_id;
+    if (cid) (groups[cid] = groups[cid] || []).push(m);
+  });
+
+  Object.values(groups).forEach(ms => {
+    if (ms.length < 2) return;
+    const lat = ms.reduce((s, m) => s + m._trueLatLng.lat, 0) / ms.length;
+    const lng = ms.reduce((s, m) => s + m._trueLatLng.lng, 0) / ms.length;
+    const anchor = L.latLng(lat, lng);
+    const ap = state.map.latLngToLayerPoint(anchor);
+    const radius = Math.min(38, 15 + 3.4 * ms.length);
+
+    ms.forEach((m, i) => {
+      const a = -Math.PI / 2 + (2 * Math.PI * i) / ms.length;
+      const pos = state.map.layerPointToLatLng(
+        L.point(ap.x + radius * Math.cos(a), ap.y + radius * Math.sin(a)));
+      m.setLatLng(pos);
+      state.coloLayer.addLayer(L.polyline([anchor, pos], {
+        color: "#8a8a8a", weight: 1, opacity: 0.5, interactive: false,
+      }));
+    });
+    state.coloLayer.addLayer(L.circleMarker(anchor, {
+      radius: 2.5, color: "#8a8a8a", weight: 1, fillColor: "#8a8a8a",
+      fillOpacity: 0.9, interactive: false,
+    }));
+  });
 }
 
 function updateCountBadges() {
@@ -291,58 +412,62 @@ function updateCountBadges() {
 
 /* ---------- layer controls ---------- */
 function buildLayerControls() {
-  const groups = { mine: document.getElementById("layers-mine"), existing: document.getElementById("layers-existing") };
   const keys = Object.keys(LAYERS).sort((a, b) => LAYERS[a].order - LAYERS[b].order);
   keys.forEach(key => {
     const L2 = LAYERS[key];
+    const host = document.getElementById(`layers-${L2.section}`);
+    if (!host) return;
     const count = state.markersByLayer[key] ? state.markersByLayer[key].length : 0;
-    if (count === 0 && key === "other") return; // hide empty catch-all
+    if (count === 0 && L2.hideIfEmpty) return;
     const row = document.createElement("label");
     row.className = "layer-row";
     row.innerHTML = `
       <input type="checkbox" checked data-key="${key}" />
-      <span class="swatch">${shapeSVG(L2.shape === "pentagon" ? "pentagon" : L2.shape, L2.color, true, 18).replace("pentagon", "")}</span>
+      <span class="swatch">${markerSVG(key, true, L2.family === "sas" ? 17 : 15)}</span>
       <span class="lr-label">${L2.label}</span>
       <span class="lr-count" data-key="${key}">${count}</span>`;
-    // pentagon swatch fix
-    if (L2.shape === "pentagon") {
-      row.querySelector(".swatch").innerHTML =
-        `<svg width="18" height="18" viewBox="0 0 18 18"><polygon points="${pentagon(9,9,7)}" fill="${L2.color}" stroke="${L2.color}" stroke-width="1"/></svg>`;
-    }
     const cb = row.querySelector("input");
     cb.addEventListener("change", () => {
       state.enabled[key] = cb.checked;
       row.classList.toggle("is-off", !cb.checked);
       refreshMarkerDisplay();
     });
-    groups[L2.group].appendChild(row);
+    host.appendChild(row);
   });
-
-  // legend note
-  const note = document.createElement("p");
-  note.className = "legend-note";
-  note.innerHTML = "Shape = monitor type · colour = category. Hollow = planned, solid = installed.";
-  groups.mine.parentElement.appendChild(note);
 }
 
 /* ---------- stats ---------- */
 function buildStats() {
-  const mineKeys = ["doe_colocation", "border", "ambient_semi_urban", "ambient_village", "pollution_hotspot"];
-  const mine = mineKeys.reduce((n, k) => n + (state.markersByLayer[k]?.length || 0), 0);
-  const doe = (state.markersByLayer.doe_cams?.length || 0) + (state.markersByLayer.doe_ccams?.length || 0);
-  const existing = state.allFeatures.filter(f => f.properties.group === "existing").length;
+  const bySection = s => state.allFeatures.filter(f => (LAYERS[f.properties.layer] || LAYERS.other).section === s).length;
+  const units = state.summary?.doe_proposed_units ?? bySection("doe_proposed");
   const row = document.getElementById("stat-row");
   row.innerHTML = `
-    <div class="stat"><div class="num">${mine}</div><div class="lab">My sensors</div></div>
-    <div class="stat"><div class="num">${doe}</div><div class="lab">DoE CAMS</div></div>
-    <div class="stat"><div class="num">${existing}</div><div class="lab">3rd-party</div></div>`;
-  if (state.summary?.built_utc)
-    document.getElementById("built-stamp").textContent = "Data built " + state.summary.built_utc;
+    <div class="stat"><div class="num">${units}</div><div class="lab">DoE proposed</div></div>
+    <div class="stat"><div class="num">${bySection("sas")}</div><div class="lab">Super SAS</div></div>
+    <div class="stat"><div class="num">${bySection("mine")}</div><div class="lab">UW–BUET</div></div>
+    <div class="stat"><div class="num">${bySection("existing")}</div><div class="lab">Existing</div></div>`;
+  const stamp = [];
+  if (state.summary?.built_utc) stamp.push("Data built " + state.summary.built_utc);
+  if (state.summary?.colocated_sites) stamp.push(`${state.summary.colocated_sites} shared sites`);
+  document.getElementById("built-stamp").textContent = stamp.join(" · ");
+}
+
+/* ---------- awaiting-siting list ---------- */
+function buildPending() {
+  const items = state.summary?.pending || [];
+  if (!items.length) return;
+  document.getElementById("pending-panel").hidden = false;
+  document.getElementById("pending-count").textContent = items.length;
+  document.getElementById("pending-list").innerHTML = items.map(it => {
+    const L2 = LAYERS[it.layer] || LAYERS.other;
+    return `<li><span class="pc-dot" style="background:${L2.color}"></span>
+      <span class="pd-name">${it.name || it.id}</span>
+      <span class="pd-sub">${it.district || it.division || ""} — ${it.reason}</span></li>`;
+  }).join("");
 }
 
 /* ---------- UI wiring ---------- */
 function wireUI() {
-  // sidebar collapse
   const app = document.getElementById("app");
   const openBtn = document.getElementById("sidebar-open");
   document.getElementById("side-toggle").addEventListener("click", () => {
@@ -354,7 +479,6 @@ function wireUI() {
     setTimeout(() => state.map.invalidateSize(), 300);
   });
 
-  // status filter
   document.querySelectorAll("#status-filter .seg-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("#status-filter .seg-btn").forEach(b => b.classList.remove("is-on"));
@@ -364,11 +488,10 @@ function wireUI() {
     });
   });
 
-  // group hide/show all
   document.querySelectorAll(".mini-toggle").forEach(btn => {
     btn.addEventListener("click", () => {
-      const group = btn.dataset.group;
-      const keys = Object.keys(LAYERS).filter(k => LAYERS[k].group === group);
+      const section = btn.dataset.group;
+      const keys = Object.keys(LAYERS).filter(k => LAYERS[k].section === section);
       const turnOff = btn.textContent.startsWith("hide");
       keys.forEach(k => {
         state.enabled[k] = !turnOff;
@@ -380,7 +503,9 @@ function wireUI() {
     });
   });
 
-  // options
+  document.getElementById("opt-spread").addEventListener("change", e => {
+    state.spread = e.target.checked; applyColoSpread();
+  });
   document.getElementById("opt-cluster").addEventListener("change", e => {
     state.useCluster = e.target.checked; refreshMarkerDisplay();
   });
@@ -391,22 +516,13 @@ function wireUI() {
   document.getElementById("opt-theme").addEventListener("change", e => {
     const dark = e.target.checked;
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    // auto-switch basemap for readability
     const sel = document.getElementById("opt-basemap");
     if (dark && sel.value === "carto") { sel.value = "cartodark"; setBasemap("cartodark"); }
     if (!dark && sel.value === "cartodark") { sel.value = "carto"; setBasemap("carto"); }
-    redrawIcons();
   });
   document.getElementById("opt-basemap").addEventListener("change", e => setBasemap(e.target.value));
 
   wireSearch();
-}
-
-// hollow icons reference --surface-1; redraw them after a theme flip so fill updates
-function redrawIcons() {
-  Object.keys(state.markersByLayer).forEach(key => {
-    state.markersByLayer[key].forEach(m => m.setIcon(makeIcon(key, m._status)));
-  });
 }
 
 /* ---------- search ---------- */
@@ -417,7 +533,7 @@ function wireSearch() {
   const render = (items) => {
     if (!items.length) { results.hidden = true; return; }
     results.innerHTML = items.map((it, i) =>
-      `<li data-i="${i}"><div>${it.p.name || it.p.id}</div><div class="r-sub">${(LAYERS[it.key]||LAYERS.other).label} · ${it.p.division || it.p.city || ""}</div></li>`
+      `<li data-i="${i}"><div>${it.p.name || it.p.id}</div><div class="r-sub">${(LAYERS[it.key]||LAYERS.other).label} · ${it.p.district || it.p.division || it.p.city || ""}</div></li>`
     ).join("");
     results.hidden = false; idx = -1;
     Array.from(results.children).forEach((li, i) => {
@@ -431,7 +547,7 @@ function wireSearch() {
     const items = [];
     state.allFeatures.forEach(f => {
       const p = f.properties;
-      const hay = `${p.name} ${p.district || ""} ${p.city || ""} ${p.id} ${p.division || ""}`.toLowerCase();
+      const hay = `${p.name} ${p.district || ""} ${p.city || ""} ${p.id} ${p.division || ""} ${p.school || ""} ${p.pair_id || ""}`.toLowerCase();
       if (hay.includes(q)) items.push({ p, key: LAYERS[p.layer] ? p.layer : "other", f });
     });
     render(items.slice(0, 20));
@@ -448,16 +564,15 @@ function wireSearch() {
   }
   function flyTo(item) {
     const [lng, lat] = item.f.geometry.coordinates;
-    // ensure its layer is on
     if (!state.enabled[item.key]) {
       state.enabled[item.key] = true;
       const cb = document.querySelector(`input[data-key="${item.key}"]`);
       if (cb) { cb.checked = true; cb.closest(".layer-row").classList.remove("is-off"); }
       refreshMarkerDisplay();
     }
-    state.map.flyTo([lat, lng], 12, { duration: 0.8 });
+    state.map.flyTo([lat, lng], 14, { duration: 0.8 });
     const marker = state.markersByLayer[item.key].find(m => m.feature.properties.id === item.p.id);
-    if (marker) setTimeout(() => marker.openPopup(), 850);
+    if (marker) setTimeout(() => marker.openPopup(), 900);
     results.hidden = true; input.blur();
   }
   document.addEventListener("click", e => {

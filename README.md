@@ -1,9 +1,10 @@
 # Bangladesh PM2.5 Sensor Deployment Map
 
 An interactive map of **every PM2.5 air-quality deployment in Bangladesh** — the DoE regulatory
-network (CAMS + C-CAMS), all third-party/low-cost networks, and the **UW–BUET 55-sensor low-cost
-network** being planned by Bishwadip Maitra. The map rebuilds from plain CSV files and redeploys to
-GitHub Pages automatically on every push.
+network (CAMS + C-CAMS), the **Super SAS Aria** super-sites, the **DoE proposed 55-unit low-cost
+plan**, all third-party/low-cost networks, and the **UW–BUET low-cost network** being planned by
+Bishwadip Maitra. The map rebuilds from plain CSV files and redeploys to GitHub Pages automatically
+on every push.
 
 **Live map:** https://maitrabishwadip.github.io/UW-BUET-PM2.5-Sensor-Deployment-Map/
 *(available once GitHub Pages is enabled — see [First-time setup](#first-time-setup))*
@@ -14,27 +15,45 @@ GitHub Pages automatically on every push.
 
 ## What's on the map
 
-| Layer | Shape · colour | Source |
-|---|---|---|
-| DoE CAMS (reference) | gold ★ | DoE Dec-2025 report |
-| DoE C-CAMS (reference) | violet ✦ | DoE Dec-2025 report |
-| US Embassy (BAM reference) | blue ▲ | AirNow |
-| SPARTAN (filter reference) | brown ⬟ | SPARTAN network |
-| GAIA / aqicn (low-cost) | teal ● | aqicn/WAQI |
-| PurpleAir (low-cost) | violet ● | PurpleAir |
-| IQAir (low-cost) | pink ● | IQAir |
-| aqicn community (low-cost) | grey ● | aqicn AirNet |
-| **My DoE colocation** (Block A) | blue ■ | this project |
-| **My border area** (Block B) | red ■ | this project |
-| **My ambient · semi-urban** | orange ◆ | this project |
-| **My ambient · village/rural** | green ◆ | this project |
-| **My pollution source/hotspot** | black ◆ | this project *(placeholder — no sites yet)* |
+Every deployment is drawn as a **map pin**. **Colour** identifies the layer; the **glyph in the pin
+head** identifies the family, so four networks stacked on one compound stay readable. Super SAS
+sites break the pattern deliberately — they are **red stars ★**.
 
-**Convention:** shape = monitor type · colour = category · **hollow = planned, solid = installed**.
+| Section | Layer | Marker | Source |
+|---|---|---|---|
+| **DoE proposed (55)** | Co-located w/ existing CAMS+SAS | navy pin **+** | DoE "Proposed Monitoring Locations v2" |
+| | Co-located w/ rural SAS Aria | teal pin **+** | ” |
+| | New rural deployment | green pin **+** | ” |
+| | New urban deployment | purple pin **+** | ” |
+| | New district (no existing CAMS) | crimson pin **+** | ” |
+| **Super SAS (DoE)** | SAS Aria super-site | **red ★** | DoE table (7 CAMS-co-located + 3 rural) |
+| **UW–BUET** | DoE colocation (Block A) | blue pin **◆** | this project |
+| | Border area (Block B) | vermilion pin **◆** | this project |
+| | Ambient · semi-urban | sand pin **◆** | this project |
+| | Ambient · village/rural | teal pin **◆** | this project |
+| | Pollution source / hotspot | black pin **◆** | this project *(placeholder — no sites yet)* |
+| **Existing** | DoE CAMS / C-CAMS | amber / bronze pin **◎** | DoE Dec-2025 report |
+| | US Embassy (BAM), SPARTAN | slate / brown pin **◎** | AirNow, SPARTAN |
+| | PurpleAir, GAIA, IQAir, community | violet / mauve / pink / grey pin **●** | respective networks |
 
-Interactivity: per-layer toggles with live counts, name/district/id search, status filter
-(all / planned / installed), division shading with per-division totals on hover, marker clustering,
-basemap switcher, dark mode, and shareable URL view state. See the survey of existing networks in
+Glyphs: **◎** reference grade · **+** DoE proposed · **◆** UW–BUET · **●** low-cost.
+A **solid gradient** pin is installed; a **pale** pin is proposed or planned.
+
+### Co-located sites
+
+21 sites host more than one station (a CAMS compound often carries CAMS + SAS + a GAIA unit + a
+proposed low-cost unit). The build clusters stations within **250 m** into one site, and the map
+**fans them out on a small ring** with leader lines back to the true point, so nothing is hidden.
+Each popup lists the other stations sharing that site. Toggle it with *Fan out co-located sites*.
+
+### Awaiting siting
+
+Rows named in the source documents but with no coordinates are **not silently dropped** — they are
+reported by the build and listed in the sidebar's *Awaiting siting* panel with the reason.
+
+Interactivity: per-layer toggles with live counts, search over name/district/id/school/pair,
+status filter, division shading with per-division totals on hover, marker clustering, basemap
+switcher, dark mode, and shareable URL view state. See the survey of existing networks in
 [`reports/third_party_deployments.md`](reports/third_party_deployments.md).
 
 ---
@@ -46,15 +65,42 @@ legend badges, and summaries are all derived from the rows at build time, so the
 
 ```
 data/my_deployments/
-  doe_colocation.csv     Block A — 8 divisional DoE colocation sensors
-  border.csv             Block B — 15 border-area sensors
-  ambient.csv            Block C — 32 ambient sensors (tier = semi-urban | village)
-  pollution_hotspot.csv  Block D — PLACEHOLDER, add rows when kiln/industry sites are confirmed
+  doe_colocation.csv           Block A — 8 divisional DoE colocation sensors
+  border.csv                   Block B — 15 border-area sensors
+  ambient.csv                  Block C — 32 ambient sensors (tier = semi-urban | village)
+  pollution_hotspot.csv        Block D — PLACEHOLDER, add rows when kiln/industry sites are confirmed
+data/doe_proposed/             the DoE 55-unit proposal
+  group_a_cams_paired.csv      31 units paired with existing CAMS / C-CAMS
+  group_b_sas_paired.csv        6 units — rural SAS Aria + new urban counterpart (3 pairs)
+  group_c_new_districts.csv    18 units in districts with no existing station
+  pending_unspecified.csv       Patuakhali, Sunamganj — type/qty blank in the DoE table
 data/existing/
-  doe_cams.csv           16 DoE CAMS   (reference)
-  doe_ccams.csv          15 DoE C-CAMS (reference)
-  third_party.csv        US Embassy, GAIA, PurpleAir, IQAir, community, SPARTAN
+  doe_cams.csv                 16 DoE CAMS   (reference)
+  doe_ccams.csv                15 DoE C-CAMS (reference)
+  doe_sas.csv                  10 Super SAS Aria super-sites
+  doe_purpleair.csv            DoE PurpleAir PA-II-SD network — HEADER ONLY, awaiting the list
+  third_party.csv              US Embassy, GAIA, PurpleAir, IQAir, community, SPARTAN
 ```
+
+### The DoE proposed 55
+
+`data/doe_proposed/*.csv` rows are:
+
+```
+id, doe_group, pair_id, role, name, area_type, division, district,
+lat, lon, associated_station, school, status, coord_precision, notes
+```
+
+- **`role`** drives the colour: `cams_colocated` | `sas_colocated` | `new_rural` | `new_urban` |
+  `new_district` | `unspecified`.
+- **`pair_id`** (P1…P10) ties the two halves of a "1+1 (w/ SAS)" entry together — each such entry is
+  **two physical units**, one at the urban CAMS/SAS reference and one at a distinct rural site.
+- **`status = pending`** marks a district the DoE table names without a type or quantity; those rows
+  are excluded from the 55-unit total.
+- The seven urban CAMS+SAS rows carry `coord_precision = derived` — the source table gives no
+  coordinates, so lat/lon come from the co-located CAMS station in `doe_cams.csv`.
+
+The build prints the derived unit total (`DoE proposed units: 55`) — the number is never hardcoded.
 
 ### Adding / updating your sensors
 
@@ -86,8 +132,8 @@ python -m http.server -d docs 8000     # then open http://localhost:8000
 ```
 
 The build **fails with a clear message** (and non-zero exit, which also fails CI) on: out-of-bounds
-coordinates, unknown `status`/`category`/`division`, duplicate ids, or missing columns. Empty-coordinate
-rows only warn.
+coordinates, unknown `status`/`category`/`role`/`division`, duplicate ids, or missing columns.
+Empty-coordinate rows are reported as `PENDING` and surface in the map's *Awaiting siting* panel.
 
 ---
 
@@ -137,5 +183,8 @@ source_docs/     original DoE PDF + allocation DOCX
 .github/         Pages CI/CD workflow
 ```
 
-Coordinates for the 55 planned sensors are planning-stage approximations from the allocation plan;
-confirm exact sites by reconnaissance before installation.
+Coordinates for every planned sensor are planning-stage approximations; confirm exact sites by
+reconnaissance before installation. Where the DoE table named only a district, the nearest
+identifiable government primary school is used as a **siting anchor**, not a confirmed GPS point —
+`coord_precision` records which is which, and the per-site `notes` flag the weak ones
+(Brahmanbaria, Kushtia, Kurigram, Sylhet, Chattogram, Pirojpur).

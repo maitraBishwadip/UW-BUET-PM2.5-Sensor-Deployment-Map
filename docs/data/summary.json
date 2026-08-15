@@ -1,6 +1,14 @@
 {
-  "built_utc": "2026-07-11 17:41 UTC",
-  "total_stations": 119,
+  "built_utc": "2026-08-15 17:19 UTC",
+  "total_stations": 180,
+  "colocated_sites": 21,
+  "group_totals": {
+    "mine": 55,
+    "doe_proposed": 57,
+    "sas": 10,
+    "existing": 64
+  },
+  "doe_proposed_units": 55,
   "layer_counts": {
     "ambient_semi_urban": 14,
     "ambient_village": 18,
@@ -9,6 +17,11 @@
     "doe_cams": 16,
     "doe_ccams": 15,
     "doe_colocation": 8,
+    "doe_prop_cams": 7,
+    "doe_prop_district": 18,
+    "doe_prop_rural": 23,
+    "doe_prop_sas": 3,
+    "doe_sas": 10,
     "gaia": 17,
     "iqair": 8,
     "purpleair": 1,
@@ -18,36 +31,107 @@
   "division_counts": {
     "Barishal": {
       "mine": 6,
-      "existing": 2
+      "doe_proposed": 3,
+      "existing": 2,
+      "sas": 1
     },
     "Chattogram": {
       "mine": 7,
-      "existing": 11
+      "doe_proposed": 9,
+      "existing": 11,
+      "sas": 1
     },
     "Dhaka": {
       "mine": 4,
-      "existing": 36
+      "doe_proposed": 13,
+      "existing": 36,
+      "sas": 2
     },
     "Khulna": {
       "mine": 7,
-      "existing": 6
+      "doe_proposed": 6,
+      "existing": 6,
+      "sas": 1
     },
     "Mymensingh": {
       "mine": 7,
-      "existing": 2
+      "doe_proposed": 3,
+      "existing": 2,
+      "sas": 1
     },
     "Rajshahi": {
       "mine": 8,
-      "existing": 3
+      "doe_proposed": 6,
+      "existing": 3,
+      "sas": 1
     },
     "Rangpur": {
       "mine": 8,
-      "existing": 2
+      "doe_proposed": 7,
+      "existing": 2,
+      "sas": 2
     },
     "Sylhet": {
       "mine": 8,
-      "existing": 2
+      "doe_proposed": 4,
+      "existing": 2,
+      "sas": 1
     }
   },
-  "skipped_placeholder_rows": []
+  "pending": [
+    {
+      "id": "DP-A23",
+      "name": "Satkhira urban site",
+      "group": "doe_proposed",
+      "layer": "doe_prop_urban",
+      "division": "Khulna",
+      "district": "Satkhira",
+      "reason": "coordinates pending field siting"
+    },
+    {
+      "id": "DP-B02",
+      "name": "Bhola town urban site",
+      "group": "doe_proposed",
+      "layer": "doe_prop_urban",
+      "division": "Barishal",
+      "district": "Bhola",
+      "reason": "coordinates pending field siting"
+    },
+    {
+      "id": "DP-B04",
+      "name": "Munshiganj town urban site",
+      "group": "doe_proposed",
+      "layer": "doe_prop_urban",
+      "division": "Dhaka",
+      "district": "Munshiganj",
+      "reason": "coordinates pending field siting"
+    },
+    {
+      "id": "DP-B06",
+      "name": "Dinajpur town urban site",
+      "group": "doe_proposed",
+      "layer": "doe_prop_urban",
+      "division": "Rangpur",
+      "district": "Dinajpur",
+      "reason": "coordinates pending field siting"
+    },
+    {
+      "id": "DP-X01",
+      "name": "Patuakhali",
+      "group": "doe_proposed",
+      "layer": "doe_prop_unspecified",
+      "division": "Barishal",
+      "district": "Patuakhali",
+      "reason": "type/quantity unspecified in DoE table"
+    },
+    {
+      "id": "DP-X02",
+      "name": "Sunamganj",
+      "group": "doe_proposed",
+      "layer": "doe_prop_unspecified",
+      "division": "Sylhet",
+      "district": "Sunamganj",
+      "reason": "type/quantity unspecified in DoE table"
+    }
+  ]
 }
